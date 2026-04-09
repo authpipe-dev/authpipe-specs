@@ -7,24 +7,20 @@
           "created_at": {
             "type": "string"
           },
-          "environment": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
-          "key_prefix": {
+          "name": {
             "type": "string"
           },
-          "name": {
+          "role": {
             "type": "string"
           }
         },
         "required": [
           "id",
           "name",
-          "key_prefix",
-          "environment",
+          "role",
           "created_at"
         ],
         "type": "object"
@@ -50,6 +46,23 @@
         ],
         "type": "object"
       },
+      "CategoryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "count"
+        ],
+        "type": "object"
+      },
       "ConnectionResponse": {
         "additionalProperties": false,
         "properties": {
@@ -60,6 +73,9 @@
             ],
             "format": "uri",
             "readOnly": true,
+            "type": "string"
+          },
+          "attachment": {
             "type": "string"
           },
           "connected_at": {
@@ -77,10 +93,10 @@
           "installation_id": {
             "type": "string"
           },
-          "provider_account_id": {
+          "provider_config_id": {
             "type": "string"
           },
-          "provider_id": {
+          "revoked_at": {
             "type": "string"
           },
           "scopes": {
@@ -95,13 +111,24 @@
           "status": {
             "type": "string"
           },
+          "tenant_id": {
+            "type": "string"
+          },
           "token_expires_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "user_id": {
             "type": "string"
           }
         },
         "required": [
           "id",
-          "provider_id",
+          "provider_config_id",
+          "tenant_id",
+          "attachment",
           "external_user_id",
           "credential_type",
           "status",
@@ -121,20 +148,20 @@
             "readOnly": true,
             "type": "string"
           },
-          "environment": {
-            "enum": [
-              "production",
-              "development"
-            ],
+          "name": {
             "type": "string"
           },
-          "name": {
+          "role": {
+            "enum": [
+              "secret",
+              "publishable"
+            ],
             "type": "string"
           }
         },
         "required": [
           "name",
-          "environment"
+          "role"
         ],
         "type": "object"
       },
@@ -155,15 +182,11 @@
           },
           "key": {
             "type": "string"
-          },
-          "key_prefix": {
-            "type": "string"
           }
         },
         "required": [
           "id",
-          "key",
-          "key_prefix"
+          "key"
         ],
         "type": "object"
       },
@@ -203,13 +226,16 @@
             },
             "type": "object"
           },
+          "tenant_id": {
+            "type": "string"
+          },
           "user_id": {
             "type": "string"
           }
         },
         "required": [
           "provider",
-          "user_id",
+          "tenant_id",
           "redirect_url"
         ],
         "type": "object"
@@ -265,10 +291,17 @@
           },
           "redirect_url": {
             "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
           }
         },
         "required": [
           "provider",
+          "tenant_id",
           "redirect_url"
         ],
         "type": "object"
@@ -295,6 +328,68 @@
         "required": [
           "session_id",
           "authorization_url"
+        ],
+        "type": "object"
+      },
+      "CustomProviderRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/CustomProviderRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "auth_api_key": {},
+          "auth_installation": {},
+          "auth_user": {},
+          "health_check": {},
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "CustomProviderResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/CustomProviderResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "auth_api_key": {},
+          "auth_installation": {},
+          "auth_user": {},
+          "created_at": {
+            "type": "string"
+          },
+          "health_check": {},
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "created_at"
         ],
         "type": "object"
       },
@@ -379,6 +474,41 @@
         },
         "type": "object"
       },
+      "EventResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "connection_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "data": {},
+          "delivered_at": {
+            "type": "string"
+          },
+          "delivery_attempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "installation_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "event_type",
+          "created_at",
+          "delivery_attempts"
+        ],
+        "type": "object"
+      },
       "GetCredentialInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -391,10 +521,22 @@
             "readOnly": true,
             "type": "string"
           },
+          "credential_for": {
+            "default": "any",
+            "enum": [
+              "any",
+              "installation",
+              "user"
+            ],
+            "type": "string"
+          },
           "installation_id": {
             "type": "string"
           },
           "provider": {
+            "type": "string"
+          },
+          "tenant_id": {
             "type": "string"
           },
           "user_id": {
@@ -403,7 +545,7 @@
         },
         "required": [
           "provider",
-          "user_id"
+          "tenant_id"
         ],
         "type": "object"
       },
@@ -436,60 +578,15 @@
               "array",
               "null"
             ]
+          },
+          "source": {
+            "type": "string"
           }
         },
         "required": [
           "credential",
-          "credential_type"
-        ],
-        "type": "object"
-      },
-      "GetInstallationCredentialInputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/GetInstallationCredentialInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "installation_id": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "provider",
-          "installation_id"
-        ],
-        "type": "object"
-      },
-      "GetInstallationCredentialOutputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/GetInstallationCredentialOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "credential": {
-            "type": "string"
-          },
-          "expires_at": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "credential"
+          "credential_type",
+          "source"
         ],
         "type": "object"
       },
@@ -589,6 +686,75 @@
         ],
         "type": "object"
       },
+      "ListCategoriesBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/ListCategoriesBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "categories"
+        ],
+        "type": "object"
+      },
+      "ListProvidersBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/ListProvidersBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "offset": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/ProviderResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "providers",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
       "ProviderConfigRequest": {
         "additionalProperties": false,
         "properties": {
@@ -601,7 +767,11 @@
             "readOnly": true,
             "type": "string"
           },
-          "callback_url": {
+          "attachment": {
+            "enum": [
+              "tenant",
+              "user"
+            ],
             "type": "string"
           },
           "client_id": {
@@ -612,6 +782,9 @@
           },
           "enabled": {
             "type": "boolean"
+          },
+          "oauth_redirect_url": {
+            "type": "string"
           },
           "provider_id": {
             "type": "string"
@@ -624,16 +797,14 @@
               "array",
               "null"
             ]
-          },
-          "webhook_url": {
-            "type": "string"
           }
         },
         "required": [
           "provider_id",
           "client_id",
           "client_secret",
-          "callback_url",
+          "oauth_redirect_url",
+          "attachment",
           "enabled"
         ],
         "type": "object"
@@ -650,7 +821,7 @@
             "readOnly": true,
             "type": "string"
           },
-          "callback_url": {
+          "attachment": {
             "type": "string"
           },
           "client_id": {
@@ -662,10 +833,10 @@
           "enabled": {
             "type": "boolean"
           },
-          "environment": {
+          "id": {
             "type": "string"
           },
-          "id": {
+          "oauth_redirect_url": {
             "type": "string"
           },
           "provider_id": {
@@ -679,18 +850,15 @@
               "array",
               "null"
             ]
-          },
-          "webhook_url": {
-            "type": "string"
           }
         },
         "required": [
           "id",
           "provider_id",
           "client_id",
-          "callback_url",
+          "oauth_redirect_url",
+          "attachment",
           "enabled",
-          "environment",
           "created_at"
         ],
         "type": "object"
@@ -698,14 +866,44 @@
       "ProviderResponse": {
         "additionalProperties": false,
         "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/ProviderResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "auth_api_key": {
+            "type": "boolean"
+          },
+          "auth_installation": {
+            "type": "boolean"
+          },
+          "auth_user": {
+            "type": "boolean"
+          },
           "category": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           },
           "id": {
             "type": "string"
           },
+          "installation_type": {
+            "type": "string"
+          },
+          "logo": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
+          },
+          "setup_instructions": {
+            "$ref": "#/components/schemas/SetupInstructions"
           },
           "tags": {
             "items": {
@@ -715,13 +913,46 @@
               "array",
               "null"
             ]
+          },
+          "verified": {
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "name",
+          "logo",
           "category",
-          "tags"
+          "tags",
+          "verified",
+          "description",
+          "auth_user",
+          "auth_installation",
+          "auth_api_key"
+        ],
+        "type": "object"
+      },
+      "RefreshConnectionOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/RefreshConnectionOutputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string"
+          },
+          "refreshed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "refreshed"
         ],
         "type": "object"
       },
@@ -749,6 +980,365 @@
         "required": [
           "refreshed",
           "failed"
+        ],
+        "type": "object"
+      },
+      "RotateSecretOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/RotateSecretOutputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "secret"
+        ],
+        "type": "object"
+      },
+      "SearchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/SearchRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "cursor": {
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "filter": {
+            "additionalProperties": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "type": "object"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "offset": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "query": {
+            "type": "string"
+          },
+          "sort": {
+            "items": {
+              "$ref": "#/components/schemas/SortDirectiveInput"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "SearchResponseConnectionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/SearchResponseConnectionResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectionResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "limit"
+        ],
+        "type": "object"
+      },
+      "SearchResponseEventResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/SearchResponseEventResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "limit"
+        ],
+        "type": "object"
+      },
+      "SearchResponseInstallationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/SearchResponseInstallationResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/InstallationResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "limit"
+        ],
+        "type": "object"
+      },
+      "SearchResponseProviderConfigResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/SearchResponseProviderConfigResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ProviderConfigResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "limit"
+        ],
+        "type": "object"
+      },
+      "SearchResponseProviderResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/SearchResponseProviderResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ProviderResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "limit"
+        ],
+        "type": "object"
+      },
+      "SetWebhookConfigInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/SetWebhookConfigInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "webhook_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "webhook_url"
+        ],
+        "type": "object"
+      },
+      "SetWebhookConfigOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/SetWebhookConfigOutputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          },
+          "webhook_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "webhook_url",
+          "secret"
+        ],
+        "type": "object"
+      },
+      "SetupInstructions": {
+        "additionalProperties": false,
+        "properties": {
+          "callback_note": {
+            "type": "string"
+          },
+          "docs_url": {
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "steps"
+        ],
+        "type": "object"
+      },
+      "SortDirectiveInput": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field"
         ],
         "type": "object"
       },
@@ -780,13 +1370,16 @@
           "provider": {
             "type": "string"
           },
+          "tenant_id": {
+            "type": "string"
+          },
           "user_id": {
             "type": "string"
           }
         },
         "required": [
           "provider",
-          "user_id",
+          "tenant_id",
           "credential_type",
           "credential"
         ],
@@ -817,6 +1410,83 @@
         ],
         "type": "object"
       },
+      "UpdateCustomProviderInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/UpdateCustomProviderInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "auth_api_key": {},
+          "auth_installation": {},
+          "auth_user": {},
+          "health_check": {},
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateProviderConfigInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/UpdateProviderConfigInputBody.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "attachment": {
+            "enum": [
+              "tenant",
+              "user"
+            ],
+            "type": "string"
+          },
+          "bot_scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "callback_url": {
+            "type": "string"
+          },
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "signing_key": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "UpdateWorkspaceInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -833,6 +1503,35 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "WebhookConfigResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/WebhookConfigResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "has_secret_1": {
+            "type": "boolean"
+          },
+          "has_secret_2": {
+            "type": "boolean"
+          },
+          "webhook_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "webhook_url",
+          "has_secret_1",
+          "has_secret_2"
+        ],
         "type": "object"
       },
       "WebhookDeliverOutputBody": {
@@ -854,11 +1553,16 @@
           "failed": {
             "format": "int64",
             "type": "integer"
+          },
+          "skipped": {
+            "format": "int64",
+            "type": "integer"
           }
         },
         "required": [
           "delivered",
-          "failed"
+          "failed",
+          "skipped"
         ],
         "type": "object"
       },
@@ -882,11 +1586,15 @@
           },
           "name": {
             "type": "string"
+          },
+          "tier": {
+            "type": "string"
           }
         },
         "required": [
           "id",
           "name",
+          "tier",
           "created_at"
         ],
         "type": "object"
@@ -1017,88 +1725,24 @@
         ]
       }
     },
-    "/api/auth-sessions": {
+    "/api/connections/search": {
       "post": {
-        "operationId": "create-auth-session",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateAuthSessionInputBody"
+                "$ref": "#/components/schemas/SearchRequest"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateAuthSessionOutputBody"
-                }
-              }
-            },
-            "description": "Created"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Create OAuth auth session",
-        "tags": [
-          "Connections"
-        ]
-      }
-    },
-    "/api/connections": {
-      "get": {
-        "operationId": "list-connections",
-        "parameters": [
-          {
-            "explode": false,
-            "in": "query",
-            "name": "user_id",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "explode": false,
-            "in": "query",
-            "name": "provider",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "explode": false,
-            "in": "query",
-            "name": "installation_id",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ConnectionResponse"
-                  },
-                  "type": [
-                    "array",
-                    "null"
-                  ]
+                  "$ref": "#/components/schemas/SearchResponseConnectionResponse"
                 }
               }
             },
@@ -1115,7 +1759,7 @@
             "description": "Error"
           }
         },
-        "summary": "List connections",
+        "summary": "Search connections",
         "tags": [
           "Connections"
         ]
@@ -1189,6 +1833,47 @@
           }
         },
         "summary": "Get a connection",
+        "tags": [
+          "Connections"
+        ]
+      }
+    },
+    "/api/connections/{id}/refresh": {
+      "post": {
+        "operationId": "refresh-connection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshConnectionOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Force token refresh",
         "tags": [
           "Connections"
         ]
@@ -1278,110 +1963,16 @@
         ]
       }
     },
-    "/api/install-sessions": {
-      "post": {
-        "operationId": "create-install-session",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInstallSessionInputBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateInstallSessionOutputBody"
-                }
-              }
-            },
-            "description": "Created"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Create install session",
-        "tags": [
-          "Installations"
-        ]
-      }
-    },
-    "/api/installation-credentials": {
-      "post": {
-        "description": "Returns a valid installation-level credential.",
-        "operationId": "get-installation-credential",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetInstallationCredentialInputBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GetInstallationCredentialOutputBody"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Get an installation credential",
-        "tags": [
-          "Credentials"
-        ]
-      }
-    },
-    "/api/installations": {
+    "/api/custom-providers": {
       "get": {
-        "operationId": "list-installations",
-        "parameters": [
-          {
-            "explode": false,
-            "in": "query",
-            "name": "provider",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "list-custom-providers",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/InstallationResponse"
+                    "$ref": "#/components/schemas/CustomProviderResponse"
                   },
                   "type": [
                     "array",
@@ -1403,7 +1994,248 @@
             "description": "Error"
           }
         },
-        "summary": "List installations",
+        "summary": "List custom providers",
+        "tags": [
+          "Custom Providers"
+        ]
+      },
+      "post": {
+        "operationId": "create-custom-provider",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomProviderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomProviderResponse"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create custom provider",
+        "tags": [
+          "Custom Providers"
+        ]
+      }
+    },
+    "/api/custom-providers/{id}": {
+      "delete": {
+        "operationId": "delete-custom-provider",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Delete custom provider",
+        "tags": [
+          "Custom Providers"
+        ]
+      },
+      "get": {
+        "operationId": "get-custom-provider",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomProviderResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get custom provider",
+        "tags": [
+          "Custom Providers"
+        ]
+      },
+      "patch": {
+        "operationId": "update-custom-provider",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomProviderInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomProviderResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Update custom provider",
+        "tags": [
+          "Custom Providers"
+        ]
+      }
+    },
+    "/api/events/search": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseEventResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Search events",
+        "tags": [
+          "Events"
+        ]
+      }
+    },
+    "/api/installations/search": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseInstallationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Search installations",
         "tags": [
           "Installations"
         ]
@@ -1482,16 +2314,26 @@
         ]
       }
     },
-    "/api/provider-configs": {
+    "/api/installations/{installation_id}/connections": {
       "get": {
-        "operationId": "list-provider-configs",
+        "operationId": "list-connections-by-installation-flat",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/ProviderConfigResponse"
+                    "$ref": "#/components/schemas/ConnectionResponse"
                   },
                   "type": [
                     "array",
@@ -1513,11 +2355,146 @@
             "description": "Error"
           }
         },
-        "summary": "List provider configs",
+        "summary": "List connections for an installation",
         "tags": [
-          "Provider Configs"
+          "Sub-Resources"
         ]
-      },
+      }
+    },
+    "/api/installations/{installation_id}/connections/{connection_id}": {
+      "get": {
+        "operationId": "get-connection-nested-installation-flat",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get connection",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/oauth/installs": {
+      "post": {
+        "operationId": "create-install-session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInstallSessionInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateInstallSessionOutputBody"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create install session",
+        "tags": [
+          "Installations",
+          "Publishable"
+        ]
+      }
+    },
+    "/api/oauth/sessions": {
+      "post": {
+        "operationId": "create-auth-session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAuthSessionInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateAuthSessionOutputBody"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create OAuth auth session",
+        "tags": [
+          "Connections",
+          "Publishable"
+        ]
+      }
+    },
+    "/api/provider-configs": {
       "post": {
         "operationId": "create-provider-config",
         "requestBody": {
@@ -1555,6 +2532,350 @@
         "summary": "Create provider config",
         "tags": [
           "Provider Configs"
+        ]
+      }
+    },
+    "/api/provider-configs/search": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseProviderConfigResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Search provider configs",
+        "tags": [
+          "Provider Configs"
+        ]
+      }
+    },
+    "/api/provider-configs/{config_id}/connections": {
+      "get": {
+        "operationId": "list-connections-by-config-flat",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  },
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List connections for a config",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/provider-configs/{config_id}/connections/{connection_id}": {
+      "get": {
+        "operationId": "get-connection-nested-config-flat",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get connection",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/provider-configs/{config_id}/installations": {
+      "get": {
+        "operationId": "list-installations-by-config",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InstallationResponse"
+                  },
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List installations for a config",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/provider-configs/{config_id}/installations/{installation_id}": {
+      "get": {
+        "operationId": "get-installation-nested-config",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get installation",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/provider-configs/{config_id}/installations/{installation_id}/connections": {
+      "get": {
+        "operationId": "list-connections-by-installation-config",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  },
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List connections for an installation",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/provider-configs/{config_id}/installations/{installation_id}/connections/{connection_id}": {
+      "get": {
+        "operationId": "get-connection-nested-installation-config",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get connection",
+        "tags": [
+          "Sub-Resources"
         ]
       }
     },
@@ -1629,11 +2950,620 @@
         "tags": [
           "Provider Configs"
         ]
+      },
+      "patch": {
+        "operationId": "update-provider-config",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProviderConfigInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderConfigResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Update provider config",
+        "tags": [
+          "Provider Configs"
+        ]
+      }
+    },
+    "/api/providers/categories": {
+      "get": {
+        "operationId": "list-provider-categories-authed",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCategoriesBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List provider categories (authenticated)",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/api/providers/search": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseProviderResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Search providers",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/api/providers/{id}": {
+      "get": {
+        "operationId": "get-provider-authed",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get provider by ID (authenticated)",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/api/providers/{provider_id}/configs": {
+      "get": {
+        "operationId": "list-provider-configs-by-provider",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderConfigResponse"
+                  },
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List configs for a provider",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/providers/{provider_id}/configs/{config_id}": {
+      "get": {
+        "operationId": "get-provider-config-nested",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderConfigResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get config (validates provider match)",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/providers/{provider_id}/configs/{config_id}/connections": {
+      "get": {
+        "operationId": "list-connections-by-config-nested",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  },
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List connections for a config",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/providers/{provider_id}/configs/{config_id}/connections/{connection_id}": {
+      "get": {
+        "operationId": "get-connection-nested-config",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get connection",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/providers/{provider_id}/configs/{config_id}/installations": {
+      "get": {
+        "operationId": "list-installations-by-provider-config",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InstallationResponse"
+                  },
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List installations for a config",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/providers/{provider_id}/configs/{config_id}/installations/{installation_id}": {
+      "get": {
+        "operationId": "get-installation-nested-provider",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallationResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get installation",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/providers/{provider_id}/configs/{config_id}/installations/{installation_id}/connections": {
+      "get": {
+        "operationId": "list-connections-by-installation-nested",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  },
+                  "type": [
+                    "array",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List connections for an installation",
+        "tags": [
+          "Sub-Resources"
+        ]
+      }
+    },
+    "/api/providers/{provider_id}/configs/{config_id}/installations/{installation_id}/connections/{connection_id}": {
+      "get": {
+        "operationId": "get-connection-nested-installation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get connection",
+        "tags": [
+          "Sub-Resources"
+        ]
       }
     },
     "/api/scheduler/healthcheck": {
       "post": {
-        "description": "Checks token validity for active connections. Called by SwitchPost on a schedule.",
+        "description": "Checks token validity for active connections by calling provider health check endpoints. Called by SwitchPost on a schedule.",
         "operationId": "scheduler-healthcheck",
         "responses": {
           "200": {
@@ -1697,7 +3627,7 @@
     },
     "/api/scheduler/webhook-deliver": {
       "post": {
-        "description": "Delivers pending events to workspace webhook endpoints with HMAC-SHA256 signatures. Called by SwitchPost.",
+        "description": "Delivers pending events to workspace webhook endpoints with HMAC-SHA256 signatures.",
         "operationId": "scheduler-webhook-deliver",
         "responses": {
           "200": {
@@ -1724,6 +3654,129 @@
         "summary": "Trigger webhook delivery",
         "tags": [
           "Scheduler"
+        ]
+      }
+    },
+    "/api/webhook-config": {
+      "delete": {
+        "operationId": "delete-webhook-config",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Remove webhook config",
+        "tags": [
+          "Webhook Config"
+        ]
+      },
+      "get": {
+        "operationId": "get-webhook-config",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookConfigResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get webhook config",
+        "tags": [
+          "Webhook Config"
+        ]
+      },
+      "post": {
+        "operationId": "set-webhook-config",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetWebhookConfigInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetWebhookConfigOutputBody"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Set webhook URL and generate signing secret",
+        "tags": [
+          "Webhook Config"
+        ]
+      }
+    },
+    "/api/webhook-config/rotate": {
+      "post": {
+        "operationId": "rotate-webhook-secret",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RotateSecretOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Rotate webhook signing secret",
+        "tags": [
+          "Webhook Config"
         ]
       }
     },
@@ -1880,18 +3933,61 @@
     "/providers": {
       "get": {
         "operationId": "list-providers",
+        "parameters": [
+          {
+            "description": "Number of providers to return (1-100)",
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "description": "Number of providers to return (1-100)",
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of providers to skip",
+            "explode": false,
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "description": "Number of providers to skip",
+              "format": "int64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by category (e.g. 'Developer Tools', 'CRM')",
+            "explode": false,
+            "in": "query",
+            "name": "category",
+            "schema": {
+              "description": "Filter by category (e.g. 'Developer Tools', 'CRM')",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Search by name, description, or tags",
+            "explode": false,
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "description": "Search by name, description, or tags",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ProviderResponse"
-                  },
-                  "type": [
-                    "array",
-                    "null"
-                  ]
+                  "$ref": "#/components/schemas/ListProvidersBody"
                 }
               }
             },
@@ -1914,6 +4010,78 @@
         ]
       }
     },
+    "/providers/categories": {
+      "get": {
+        "operationId": "list-provider-categories",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCategoriesBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List provider categories with counts",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
+    "/providers/{id}": {
+      "get": {
+        "operationId": "get-provider",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get provider by ID",
+        "tags": [
+          "Providers"
+        ]
+      }
+    },
     "/webhooks/{provider}": {
       "post": {
         "description": "Receives inbound webhooks from providers with signature verification.",
@@ -1926,20 +4094,14 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "in": "header",
-            "name": "X-Hub-Signature-256",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "application/octet-stream": {
               "schema": {
-                "contentEncoding": "base64",
+                "contentMediaType": "application/octet-stream",
+                "format": "binary",
                 "type": "string"
               }
             }
@@ -1970,7 +4132,7 @@
         },
         "summary": "Receive provider webhook",
         "tags": [
-          "Webhooks"
+          "Public"
         ]
       }
     }
