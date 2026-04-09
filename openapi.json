@@ -774,6 +774,15 @@
             ],
             "type": "string"
           },
+          "bot_scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "client_id": {
             "type": "string"
           },
@@ -797,6 +806,9 @@
               "array",
               "null"
             ]
+          },
+          "signing_key": {
+            "type": "string"
           }
         },
         "required": [
@@ -1460,9 +1472,6 @@
               "null"
             ]
           },
-          "callback_url": {
-            "type": "string"
-          },
           "client_id": {
             "type": "string"
           },
@@ -1471,6 +1480,9 @@
           },
           "enabled": {
             "type": "boolean"
+          },
+          "oauth_redirect_url": {
+            "type": "string"
           },
           "scopes": {
             "items": {
