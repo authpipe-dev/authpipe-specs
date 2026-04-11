@@ -1,19 +1,66 @@
 {
   "components": {
     "schemas": {
-      "APIKeyResponse": {
+      "APIKeyConfig": {
         "additionalProperties": false,
+        "description": "API key authentication configuration for a custom provider.",
         "properties": {
-          "created_at": {
+          "auth_method": {
+            "description": "How the API key is transmitted: 'header', 'query', or 'basic'.",
+            "type": "string"
+          },
+          "credentials": {
+            "description": "Credential fields the user must supply (e.g. API key, secret).",
+            "items": {
+              "$ref": "#/components/schemas/APIKeyCredential"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "auth_method"
+        ],
+        "type": "object"
+      },
+      "APIKeyCredential": {
+        "additionalProperties": false,
+        "description": "A credential field definition for API key authentication.",
+        "properties": {
+          "description": {
+            "description": "Human-readable description of what this credential field represents.",
             "type": "string"
           },
           "id": {
+            "description": "Field identifier used as the key name when storing or transmitting the credential.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "APIKeyResponse": {
+        "additionalProperties": false,
+        "description": "API key metadata. The full key value is only returned at creation time.",
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 timestamp when the key was created.",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique API key ID.",
             "type": "string"
           },
           "name": {
+            "description": "Human-readable label for the key.",
             "type": "string"
           },
           "role": {
+            "description": "Key role: 'secret' for server-side use, 'publishable' for client-side use.",
             "type": "string"
           }
         },
@@ -25,19 +72,30 @@
         ],
         "type": "object"
       },
+      "AuthSessionResult": {
+        "additionalProperties": false,
+        "description": "Result of creating an OAuth session. Redirect the user to authorization_url to begin the flow.",
+        "properties": {
+          "authorization_url": {
+            "description": "The full OAuth authorization URL to redirect the user to.",
+            "type": "string"
+          },
+          "session_id": {
+            "description": "Opaque session identifier. Can be used to correlate the authorization request with the subsequent callback.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "authorization_url"
+        ],
+        "type": "object"
+      },
       "CallbackOutputBody": {
         "additionalProperties": false,
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CallbackOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "redirect_url": {
+            "description": "The application redirect URL from the original session, with the connection result appended as query parameters.",
             "type": "string"
           }
         },
@@ -48,12 +106,15 @@
       },
       "CategoryResponse": {
         "additionalProperties": false,
+        "description": "A category grouping related providers in the catalog.",
         "properties": {
           "count": {
+            "description": "Number of providers in this category.",
             "format": "int64",
             "type": "integer"
           },
           "name": {
+            "description": "Category name (e.g. 'Developer Tools', 'CRM').",
             "type": "string"
           }
         },
@@ -63,43 +124,100 @@
         ],
         "type": "object"
       },
-      "ConnectionResponse": {
+      "CheckoutSessionParams": {
         "additionalProperties": false,
+        "description": "Parameters for starting a Stripe Checkout session to subscribe to a paid plan.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/ConnectionResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
+          "cancel_url": {
+            "description": "URL Stripe redirects to if the user cancels the checkout.",
             "type": "string"
           },
+          "interval": {
+            "default": "month",
+            "description": "Billing interval: 'month' or 'year'. Defaults to 'month'.",
+            "enum": [
+              "month",
+              "year"
+            ],
+            "type": "string"
+          },
+          "plan": {
+            "description": "Target billing tier. Free is not a checkout target.",
+            "enum": [
+              "pro",
+              "scale"
+            ],
+            "type": "string"
+          },
+          "success_url": {
+            "description": "URL Stripe redirects to after a completed checkout. Include {CHECKOUT_SESSION_ID} to verify server-side.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan",
+          "success_url",
+          "cancel_url"
+        ],
+        "type": "object"
+      },
+      "CheckoutSessionResult": {
+        "additionalProperties": false,
+        "description": "Result of creating a Stripe Checkout or plan-update session. Redirect the customer to url to complete payment.",
+        "properties": {
+          "session_id": {
+            "description": "Stripe session ID (cs_* for Checkout, bps_* for Portal upgrade flow).",
+            "type": "string"
+          },
+          "url": {
+            "description": "Stripe Checkout or Billing Portal URL to redirect the customer to.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "session_id"
+        ],
+        "type": "object"
+      },
+      "ConnectionResponse": {
+        "additionalProperties": false,
+        "description": "A stored connection to an external provider, representing a tenant's or user's credentials.",
+        "properties": {
           "attachment": {
+            "description": "Whether the credential is attached to a 'tenant' or 'user'.",
             "type": "string"
           },
           "connected_at": {
+            "description": "ISO 8601 timestamp when the connection was first established.",
             "type": "string"
           },
           "credential_type": {
+            "description": "Type of stored credential: 'oauth_token', 'api_key', or 'webhook_secret'.",
             "type": "string"
           },
           "external_user_id": {
+            "description": "The user or account identifier assigned by the external provider.",
             "type": "string"
           },
           "id": {
+            "description": "Unique connection ID.",
             "type": "string"
           },
           "installation_id": {
+            "description": "Installation this connection is scoped to, if applicable.",
             "type": "string"
           },
           "provider_config_id": {
+            "description": "ID of the provider config this connection belongs to.",
             "type": "string"
           },
           "revoked_at": {
+            "description": "ISO 8601 timestamp when the connection was revoked, if applicable.",
             "type": "string"
           },
           "scopes": {
+            "description": "OAuth scopes granted for this connection.",
             "items": {
               "type": "string"
             },
@@ -109,18 +227,23 @@
             ]
           },
           "status": {
+            "description": "Current connection status: 'active', 'needs_reauth', 'failed', or 'revoked'.",
             "type": "string"
           },
           "tenant_id": {
+            "description": "Tenant that owns this connection.",
             "type": "string"
           },
           "token_expires_at": {
+            "description": "ISO 8601 timestamp when the OAuth token expires. Absent for non-expiring credentials.",
             "type": "string"
           },
           "updated_at": {
+            "description": "ISO 8601 timestamp of the last token refresh or status change.",
             "type": "string"
           },
           "user_id": {
+            "description": "End-user within the tenant, if applicable.",
             "type": "string"
           }
         },
@@ -136,22 +259,16 @@
         ],
         "type": "object"
       },
-      "CreateAPIKeyInputBody": {
+      "CreateAPIKeyParams": {
         "additionalProperties": false,
+        "description": "Parameters for creating an API key. Choose 'secret' for server-side use or 'publishable' for client-side SDKs.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CreateAPIKeyInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "name": {
+            "description": "Human-readable label for the key (e.g. 'Production Server').",
             "type": "string"
           },
           "role": {
+            "description": "Key role: 'secret' for server-side access, 'publishable' for client-side use (cannot access sensitive operations).",
             "enum": [
               "secret",
               "publishable"
@@ -165,22 +282,16 @@
         ],
         "type": "object"
       },
-      "CreateAPIKeyOutputBody": {
+      "CreateAPIKeyResult": {
         "additionalProperties": false,
+        "description": "Result of creating an API key. The raw key value is only returned once — store it securely.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CreateAPIKeyOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "id": {
+            "description": "Unique ID of the newly created API key.",
             "type": "string"
           },
           "key": {
+            "description": "The raw API key value. This is only returned once at creation time — store it securely.",
             "type": "string"
           }
         },
@@ -190,28 +301,24 @@
         ],
         "type": "object"
       },
-      "CreateAuthSessionInputBody": {
+      "CreateAuthSessionParams": {
         "additionalProperties": false,
+        "description": "Parameters for initiating an OAuth authorization flow. Returns a URL to redirect the user to.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CreateAuthSessionInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "installation_id": {
+            "description": "Installation to associate the connection with (for providers that support both app installs and user auth).",
             "type": "string"
           },
           "provider": {
+            "description": "Provider slug to authenticate with (e.g. 'github', 'slack').",
             "type": "string"
           },
           "redirect_url": {
+            "description": "URL to redirect the user to after the OAuth flow completes. This is your application's callback URL, not the provider's redirect URI.",
             "type": "string"
           },
           "scopes": {
+            "description": "OAuth scopes to request. Overrides the provider config's default scopes when provided.",
             "items": {
               "type": "string"
             },
@@ -224,12 +331,15 @@
             "additionalProperties": {
               "type": "string"
             },
+            "description": "Key-value pairs substituted into the provider's authorization URL template. Used for providers that require dynamic URL parameters (e.g. tenant-specific subdomains).",
             "type": "object"
           },
           "tenant_id": {
+            "description": "Tenant that will own the resulting connection.",
             "type": "string"
           },
           "user_id": {
+            "description": "End-user within the tenant. Required when attachment is 'user'.",
             "type": "string"
           }
         },
@@ -240,92 +350,12 @@
         ],
         "type": "object"
       },
-      "CreateAuthSessionOutputBody": {
+      "CreateInstallSessionParams": {
         "additionalProperties": false,
+        "description": "Parameters for initiating an app installation flow (e.g. installing a GitHub App on an organization).",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CreateAuthSessionOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "authorization_url": {
-            "type": "string"
-          },
-          "session_id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "session_id",
-          "authorization_url"
-        ],
-        "type": "object"
-      },
-      "CreateCheckoutSessionInputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "cancel_url": {
-            "type": "string"
-          },
-          "interval": {
-            "default": "month",
-            "enum": [
-              "month",
-              "year"
-            ],
-            "type": "string"
-          },
-          "plan": {
-            "enum": [
-              "pro",
-              "scale"
-            ],
-            "type": "string"
-          },
-          "success_url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "plan",
-          "success_url",
-          "cancel_url"
-        ],
-        "type": "object"
-      },
-      "CreateCheckoutSessionOutputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "session_id": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "url",
-          "session_id"
-        ],
-        "type": "object"
-      },
-      "CreateInstallSessionInputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CreateInstallSessionInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "permissions": {
+            "description": "Permissions to request during installation. Format is provider-specific (e.g. for GitHub: 'contents:read', 'issues:write').",
             "items": {
               "type": "string"
             },
@@ -335,15 +365,19 @@
             ]
           },
           "provider": {
+            "description": "Provider slug to install (e.g. 'github'). The provider must support app installation flows.",
             "type": "string"
           },
           "redirect_url": {
+            "description": "URL to redirect the user to after the installation completes. This is your application's callback URL.",
             "type": "string"
           },
           "tenant_id": {
+            "description": "Tenant that will own the resulting installation.",
             "type": "string"
           },
           "user_id": {
+            "description": "User initiating the installation, if tracking is needed.",
             "type": "string"
           }
         },
@@ -354,75 +388,32 @@
         ],
         "type": "object"
       },
-      "CreateInstallSessionOutputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CreateInstallSessionOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "authorization_url": {
-            "type": "string"
-          },
-          "session_id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "session_id",
-          "authorization_url"
-        ],
-        "type": "object"
-      },
-      "CreatePortalSessionInputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "return_url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "return_url"
-        ],
-        "type": "object"
-      },
-      "CreatePortalSessionOutputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "url"
-        ],
-        "type": "object"
-      },
       "CustomProviderRequest": {
         "additionalProperties": false,
+        "description": "Request body for creating a custom provider. At least one of auth_user, auth_installation, or auth_api_key must be provided.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CustomProviderRequest.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
+          "auth_api_key": {
+            "$ref": "#/components/schemas/APIKeyConfig",
+            "description": "API key authentication configuration. Include this when users provide a static API key instead of going through OAuth."
           },
-          "auth_api_key": {},
-          "auth_installation": {},
-          "auth_user": {},
-          "health_check": {},
+          "auth_installation": {
+            "$ref": "#/components/schemas/OAuthConfig",
+            "description": "OAuth 2.0 configuration for app installation flows. Include this when users will install your app into their organization or workspace."
+          },
+          "auth_user": {
+            "$ref": "#/components/schemas/OAuthConfig",
+            "description": "OAuth 2.0 configuration for per-user authorization flows. Include this when users will connect their accounts."
+          },
+          "health_check": {
+            "$ref": "#/components/schemas/HealthCheckConfig",
+            "description": "Configuration for verifying that a stored credential is still valid. Authpipe calls this endpoint when checking credential health."
+          },
           "id": {
+            "description": "Unique slug identifier for the custom provider (e.g. 'my-saas'). Used as the provider value when initiating auth sessions.",
             "type": "string"
           },
           "name": {
+            "description": "Human-readable display name for the provider.",
             "type": "string"
           }
         },
@@ -434,27 +425,34 @@
       },
       "CustomProviderResponse": {
         "additionalProperties": false,
+        "description": "A user-defined custom provider with its authentication configuration.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/CustomProviderResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
+          "auth_api_key": {
+            "$ref": "#/components/schemas/APIKeyConfig",
+            "description": "API key authentication configuration."
           },
-          "auth_api_key": {},
-          "auth_installation": {},
-          "auth_user": {},
+          "auth_installation": {
+            "$ref": "#/components/schemas/OAuthConfig",
+            "description": "OAuth 2.0 configuration for app installation flows."
+          },
+          "auth_user": {
+            "$ref": "#/components/schemas/OAuthConfig",
+            "description": "OAuth 2.0 configuration for per-user authorization flows."
+          },
           "created_at": {
+            "description": "ISO 8601 timestamp when the custom provider was created.",
             "type": "string"
           },
-          "health_check": {},
+          "health_check": {
+            "$ref": "#/components/schemas/HealthCheckConfig",
+            "description": "Health check configuration for verifying stored credentials."
+          },
           "id": {
+            "description": "Unique slug identifier for the custom provider.",
             "type": "string"
           },
           "name": {
+            "description": "Human-readable display name.",
             "type": "string"
           }
         },
@@ -465,19 +463,12 @@
         ],
         "type": "object"
       },
-      "DevicePollInputBody": {
+      "DevicePollParams": {
         "additionalProperties": false,
+        "description": "Parameters for polling a device authorization session.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/DevicePollInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "session_id": {
+            "description": "Session token returned by the device-auth-start endpoint.",
             "type": "string"
           }
         },
@@ -486,25 +477,20 @@
         ],
         "type": "object"
       },
-      "DevicePollOutputBody": {
+      "DevicePollResult": {
         "additionalProperties": false,
+        "description": "Result of polling a device authorization session. Check status: 'pending' means keep polling, 'complete' means the connection was created.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/DevicePollOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "connection_id": {
+            "description": "ID of the newly created connection. Present only when status is 'complete'.",
             "type": "string"
           },
           "error": {
+            "description": "Error message if the authorization failed.",
             "type": "string"
           },
           "status": {
+            "description": "Authorization status: 'pending' (user hasn't authorized yet), 'complete' (token stored, connection created), 'denied' (user rejected), or 'expired' (code expired).",
             "type": "string"
           }
         },
@@ -513,22 +499,16 @@
         ],
         "type": "object"
       },
-      "DeviceStartInputBody": {
+      "DeviceStartParams": {
         "additionalProperties": false,
+        "description": "Parameters for starting an RFC 8628 device authorization flow.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/DeviceStartInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "provider": {
+            "description": "Provider slug to authenticate with (e.g. 'github'). The provider must support the RFC 8628 device authorization grant.",
             "type": "string"
           },
           "scopes": {
+            "description": "OAuth scopes to request. Falls back to the provider config's default scopes when omitted.",
             "items": {
               "type": "string"
             },
@@ -541,12 +521,15 @@
             "additionalProperties": {
               "type": "string"
             },
+            "description": "Key-value pairs substituted into provider URL templates for providers with dynamic endpoints.",
             "type": "object"
           },
           "tenant_id": {
+            "description": "Tenant that will own the resulting connection.",
             "type": "string"
           },
           "user_id": {
+            "description": "End-user within the tenant. Required when the provider config attachment is 'user'.",
             "type": "string"
           }
         },
@@ -556,36 +539,34 @@
         ],
         "type": "object"
       },
-      "DeviceStartOutputBody": {
+      "DeviceStartResult": {
         "additionalProperties": false,
+        "description": "Result of starting a device authorization flow. Display user_code and verification_uri to the user, then poll for completion.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/DeviceStartOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "expires_in": {
+            "description": "Seconds until the device_code and user_code expire.",
             "format": "int64",
             "type": "integer"
           },
           "interval": {
+            "description": "Minimum polling interval in seconds. Do not poll more frequently than this.",
             "format": "int64",
             "type": "integer"
           },
           "session_id": {
+            "description": "Opaque session token that encapsulates the device_code. Pass this to the poll endpoint.",
             "type": "string"
           },
           "user_code": {
+            "description": "Short code the user enters at the verification URI to authorize the device.",
             "type": "string"
           },
           "verification_uri": {
+            "description": "URL the user visits to enter the user_code and grant access.",
             "type": "string"
           },
           "verification_uri_complete": {
+            "description": "Convenience URL with the user_code pre-filled, if provided by the provider.",
             "type": "string"
           }
         },
@@ -618,15 +599,6 @@
       "ErrorModel": {
         "additionalProperties": false,
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/ErrorModel.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "detail": {
             "description": "A human-readable explanation specific to this occurrence of the problem.",
             "examples": [
@@ -681,31 +653,42 @@
       },
       "EventResponse": {
         "additionalProperties": false,
+        "description": "An audit event recording a connection lifecycle change or API activity.",
         "properties": {
           "actor_id": {
+            "description": "ID of the actor that triggered the event (API key ID or system).",
             "type": "string"
           },
           "connection_id": {
+            "description": "Connection associated with this event, if applicable.",
             "type": "string"
           },
           "created_at": {
+            "description": "ISO 8601 timestamp when the event occurred.",
             "type": "string"
           },
-          "data": {},
+          "data": {
+            "description": "Event-specific payload. Shape varies by event_type."
+          },
           "delivered_at": {
+            "description": "ISO 8601 timestamp of the first successful webhook delivery, if configured.",
             "type": "string"
           },
           "delivery_attempts": {
+            "description": "Number of webhook delivery attempts made for this event.",
             "format": "int64",
             "type": "integer"
           },
           "event_type": {
+            "description": "Event type, such as 'connection.created' or 'token.refreshed'.",
             "type": "string"
           },
           "id": {
+            "description": "Unique event ID.",
             "type": "string"
           },
           "installation_id": {
+            "description": "Installation associated with this event, if applicable.",
             "type": "string"
           }
         },
@@ -717,20 +700,13 @@
         ],
         "type": "object"
       },
-      "GetCredentialInputBody": {
+      "GetCredentialParams": {
         "additionalProperties": false,
+        "description": "Parameters for retrieving a decrypted credential. Authpipe refreshes expired OAuth tokens automatically before returning.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/GetCredentialInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "credential_for": {
             "default": "any",
+            "description": "Preferred credential source: 'any' returns the best available credential, 'installation' returns the app installation token, 'user' returns the per-user token.",
             "enum": [
               "any",
               "installation",
@@ -739,15 +715,19 @@
             "type": "string"
           },
           "installation_id": {
+            "description": "Scope the lookup to a specific installation. When omitted, Authpipe selects the active installation automatically.",
             "type": "string"
           },
           "provider": {
+            "description": "Provider slug to retrieve a credential for (e.g. 'github', 'slack').",
             "type": "string"
           },
           "tenant_id": {
+            "description": "Tenant that owns the credential.",
             "type": "string"
           },
           "user_id": {
+            "description": "End-user within the tenant. Required when the connection is user-attached.",
             "type": "string"
           }
         },
@@ -757,34 +737,32 @@
         ],
         "type": "object"
       },
-      "GetCredentialOutputBody": {
+      "GetCredentialResult": {
         "additionalProperties": false,
+        "description": "A decrypted, ready-to-use credential. Use the credential value directly in API calls to the provider.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/GetCredentialOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "credential": {
+            "description": "The decrypted, ready-to-use credential value (access token, API key, etc.).",
             "type": "string"
           },
           "credential_type": {
+            "description": "Type of credential returned: 'oauth_token', 'api_key', or 'webhook_secret'.",
             "type": "string"
           },
           "expires_at": {
+            "description": "ISO 8601 timestamp when the credential expires. Absent for non-expiring credentials.",
             "type": "string"
           },
           "needs_reauth": {
+            "description": "Whether the connection requires the user to re-authenticate (e.g. refresh token is expired or missing).",
             "type": "boolean"
           },
           "refreshed": {
+            "description": "Whether the token was automatically refreshed before being returned.",
             "type": "boolean"
           },
           "scopes": {
+            "description": "OAuth scopes associated with this credential.",
             "items": {
               "type": "string"
             },
@@ -794,6 +772,7 @@
             ]
           },
           "source": {
+            "description": "Indicates whether the credential came from a 'connection' or an 'installation'.",
             "type": "string"
           }
         },
@@ -806,98 +785,43 @@
         ],
         "type": "object"
       },
-      "GetSubscriptionOutputBody": {
+      "HealthCheckConfig": {
         "additionalProperties": false,
+        "description": "Configuration for verifying that a stored credential is still valid.",
         "properties": {
-          "audit_log_days": {
-            "format": "int64",
-            "type": "integer"
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Additional HTTP headers to include in the health check request.",
+            "type": "object"
           },
-          "connected_accounts_max": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "connected_accounts_used": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "current_period_end": {
+          "method": {
+            "description": "HTTP method for the health check request (e.g. 'GET', 'POST').",
             "type": "string"
           },
-          "custom_providers_max": {
+          "success_status": {
+            "description": "HTTP status code that indicates a healthy credential (e.g. 200).",
             "format": "int64",
             "type": "integer"
           },
-          "custom_providers_used": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "has_stripe_customer": {
-            "type": "boolean"
-          },
-          "stripe_subscription_id": {
-            "type": "string"
-          },
-          "tier": {
+          "url": {
+            "description": "Endpoint URL to call with the credential. A 2xx response confirms the credential is valid.",
             "type": "string"
           }
         },
         "required": [
-          "tier",
-          "connected_accounts_used",
-          "connected_accounts_max",
-          "custom_providers_used",
-          "custom_providers_max",
-          "audit_log_days",
-          "has_stripe_customer"
-        ],
-        "type": "object"
-      },
-      "HealthCheckOutputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/HealthCheckOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "checked": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "healthy": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "unhealthy": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "checked",
-          "healthy",
-          "unhealthy"
+          "method",
+          "url",
+          "success_status"
         ],
         "type": "object"
       },
       "InboundWebhookOutputBody": {
         "additionalProperties": false,
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/InboundWebhookOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "received": {
+            "description": "Always true when the webhook was accepted and verified successfully.",
             "type": "boolean"
           }
         },
@@ -906,37 +830,55 @@
         ],
         "type": "object"
       },
-      "InstallationResponse": {
+      "InstallSessionResult": {
         "additionalProperties": false,
+        "description": "Result of creating an install session. Redirect the user to authorization_url to begin the installation.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/InstallationResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
+          "authorization_url": {
+            "description": "The full authorization URL to redirect the user to in order to install the app.",
             "type": "string"
           },
+          "session_id": {
+            "description": "Opaque session identifier for the installation flow.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "authorization_url"
+        ],
+        "type": "object"
+      },
+      "InstallationResponse": {
+        "additionalProperties": false,
+        "description": "A provider app installation, such as a GitHub App installed on an organization.",
+        "properties": {
           "id": {
+            "description": "Unique installation ID.",
             "type": "string"
           },
           "installed_at": {
+            "description": "ISO 8601 timestamp when the installation was created.",
             "type": "string"
           },
           "installed_by": {
+            "description": "User ID who initiated the installation, if known.",
             "type": "string"
           },
           "provider_id": {
+            "description": "Provider slug for this installation (e.g. 'github').",
             "type": "string"
           },
           "provider_installation_id": {
+            "description": "The installation ID assigned by the external provider.",
             "type": "string"
           },
           "status": {
+            "description": "Installation status: 'active', 'needs_reauth', 'suspended', or 'deleted'.",
             "type": "string"
           },
           "token_expires_at": {
+            "description": "ISO 8601 timestamp when the installation token expires, if applicable.",
             "type": "string"
           }
         },
@@ -951,16 +893,8 @@
       },
       "ListCategoriesBody": {
         "additionalProperties": false,
+        "description": "List of provider categories with counts.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/ListCategoriesBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "categories": {
             "items": {
               "$ref": "#/components/schemas/CategoryResponse"
@@ -978,25 +912,20 @@
       },
       "ListProvidersBody": {
         "additionalProperties": false,
+        "description": "Paginated list of providers from the Authpipe catalog.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/ListProvidersBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "limit": {
+            "description": "Maximum number of providers returned in this response.",
             "format": "int64",
             "type": "integer"
           },
           "offset": {
+            "description": "Number of providers skipped before this page.",
             "format": "int64",
             "type": "integer"
           },
           "providers": {
+            "description": "List of providers matching the query.",
             "items": {
               "$ref": "#/components/schemas/ProviderResponse"
             },
@@ -1006,6 +935,7 @@
             ]
           },
           "total": {
+            "description": "Total number of providers matching the query (before pagination).",
             "format": "int64",
             "type": "integer"
           }
@@ -1018,19 +948,182 @@
         ],
         "type": "object"
       },
-      "ProviderConfigRequest": {
+      "OAuthConfig": {
         "additionalProperties": false,
+        "description": "OAuth 2.0 authorization-code flow configuration for a custom provider.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/ProviderConfigRequest.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
+          "authorization_url": {
+            "description": "Provider's authorization endpoint URL. Users are redirected here to grant access.",
             "type": "string"
           },
+          "default_scopes": {
+            "description": "Scopes requested by default when no explicit scopes are provided.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pkce": {
+            "description": "PKCE challenge method: 'S256' or 'plain'. Omit to disable PKCE.",
+            "type": "string"
+          },
+          "refresh_rotation": {
+            "description": "Whether the provider issues a new refresh token on every token refresh.",
+            "type": "boolean"
+          },
+          "scopes": {
+            "description": "Full list of OAuth scopes this provider supports.",
+            "items": {
+              "$ref": "#/components/schemas/OAuthScope"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "token_auth_method": {
+            "description": "Client authentication method for the token endpoint: 'client_secret_post', 'client_secret_basic', or 'none'.",
+            "type": "string"
+          },
+          "token_lifetime": {
+            "description": "Expected access token lifetime in seconds.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "token_url": {
+            "description": "Provider's token endpoint URL used to exchange authorization codes for access tokens.",
+            "type": "string"
+          },
+          "type": {
+            "description": "OAuth grant type (e.g. 'authorization_code'). Defaults to authorization_code when omitted.",
+            "type": "string"
+          },
+          "version": {
+            "description": "OAuth version override (e.g. '1.0a' for OAuth 1.0a providers).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "authorization_url",
+          "token_url"
+        ],
+        "type": "object"
+      },
+      "OAuthScope": {
+        "additionalProperties": false,
+        "description": "An OAuth scope supported by a provider.",
+        "properties": {
+          "description": {
+            "description": "Human-readable description of what the scope grants.",
+            "type": "string"
+          },
+          "id": {
+            "description": "Scope identifier as defined by the provider (e.g. 'repo', 'read:user').",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "PlanCard": {
+        "additionalProperties": false,
+        "description": "Pricing card data for a single billing tier, sourced from Stripe Products and Prices.",
+        "properties": {
+          "description": {
+            "description": "Short description from the Stripe product. May be empty.",
+            "type": "string"
+          },
+          "features": {
+            "description": "Marketing feature bullets from the Stripe product's marketing_features list.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Stable tier identifier for the upgrade flow (e.g. 'pro', 'scale').",
+            "type": "string"
+          },
+          "name": {
+            "description": "Display name from the Stripe product (e.g. 'Authpipe Pro').",
+            "type": "string"
+          },
+          "price_monthly": {
+            "description": "Formatted monthly price string (e.g. '$49'). Absent if no monthly price is configured.",
+            "type": "string"
+          },
+          "price_yearly": {
+            "description": "Formatted yearly price string (e.g. '$490'). Absent if no yearly price is configured.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "features"
+        ],
+        "type": "object"
+      },
+      "PlansOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/PlanCard"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "plans"
+        ],
+        "type": "object"
+      },
+      "PortalSessionParams": {
+        "additionalProperties": false,
+        "description": "Parameters for opening the Stripe Billing Portal for an existing subscriber.",
+        "properties": {
+          "return_url": {
+            "description": "URL Stripe sends the customer back to after they finish in the Billing Portal.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "return_url"
+        ],
+        "type": "object"
+      },
+      "PortalSessionResult": {
+        "additionalProperties": false,
+        "description": "Result of creating a Stripe Billing Portal session. Redirect the customer to url to manage their subscription.",
+        "properties": {
+          "url": {
+            "description": "Short-lived Stripe Billing Portal URL to redirect the customer to.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
+      "ProviderConfigRequest": {
+        "additionalProperties": false,
+        "description": "Request body for creating a provider configuration. Registers your OAuth app credentials with Authpipe for a specific provider.",
+        "properties": {
           "attachment": {
+            "description": "Connection attachment model: 'tenant' stores one credential per tenant (shared), 'user' stores one credential per tenant+user combination (individual).",
             "enum": [
               "tenant",
               "user"
@@ -1038,6 +1131,7 @@
             "type": "string"
           },
           "bot_scopes": {
+            "description": "OAuth scopes to request for bot/app-level access (used by providers like Slack that distinguish user and bot token scopes).",
             "items": {
               "type": "string"
             },
@@ -1047,21 +1141,27 @@
             ]
           },
           "client_id": {
+            "description": "OAuth application client ID issued by the provider.",
             "type": "string"
           },
           "client_secret": {
+            "description": "OAuth application client secret issued by the provider. Stored encrypted at rest and never returned in responses.",
             "type": "string"
           },
           "enabled": {
+            "description": "Whether this provider config is active. Disabled configs cannot initiate new auth sessions.",
             "type": "boolean"
           },
           "oauth_redirect_url": {
+            "description": "OAuth redirect URI registered with the provider. Must match the redirect URI configured in your OAuth application settings exactly.",
             "type": "string"
           },
           "provider_id": {
+            "description": "Provider slug to configure (e.g. 'github', 'slack'). Use a custom provider ID for custom integrations.",
             "type": "string"
           },
           "scopes": {
+            "description": "Default OAuth scopes to request when initiating user auth sessions. Can be overridden per session.",
             "items": {
               "type": "string"
             },
@@ -1071,6 +1171,7 @@
             ]
           },
           "signing_key": {
+            "description": "Webhook signing secret or app private key for providers that require request signing (e.g. GitHub Apps).",
             "type": "string"
           }
         },
@@ -1086,38 +1187,38 @@
       },
       "ProviderConfigResponse": {
         "additionalProperties": false,
+        "description": "OAuth or API key configuration for a provider registered within a workspace.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/ProviderConfigResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "attachment": {
+            "description": "Whether connections are scoped to a 'tenant' or 'user'.",
             "type": "string"
           },
           "client_id": {
+            "description": "OAuth application client ID registered with the provider.",
             "type": "string"
           },
           "created_at": {
+            "description": "ISO 8601 timestamp when the config was created.",
             "type": "string"
           },
           "enabled": {
+            "description": "Whether this provider config is active. Disabled configs cannot initiate new auth sessions.",
             "type": "boolean"
           },
           "id": {
+            "description": "Unique provider config ID.",
             "type": "string"
           },
           "oauth_redirect_url": {
+            "description": "The OAuth redirect URI registered with the provider — must match exactly.",
             "type": "string"
           },
           "provider_id": {
+            "description": "Provider slug this config targets (e.g. 'github', 'slack').",
             "type": "string"
           },
           "scopes": {
+            "description": "Default OAuth scopes requested when initiating an auth session.",
             "items": {
               "type": "string"
             },
@@ -1140,47 +1241,50 @@
       },
       "ProviderResponse": {
         "additionalProperties": false,
+        "description": "A provider from the Authpipe catalog.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/ProviderResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "auth_api_key": {
+            "description": "Whether the provider supports API key authentication.",
             "type": "boolean"
           },
           "auth_installation": {
+            "description": "Whether the provider supports app installation flows (e.g. GitHub Apps).",
             "type": "boolean"
           },
           "auth_user": {
+            "description": "Whether the provider supports per-user OAuth flows.",
             "type": "boolean"
           },
           "category": {
+            "description": "Provider category (e.g. 'Developer Tools', 'CRM', 'Communication').",
             "type": "string"
           },
           "description": {
+            "description": "Short description of what the provider offers.",
             "type": "string"
           },
           "id": {
+            "description": "Unique provider slug (e.g. 'github', 'slack').",
             "type": "string"
           },
           "installation_type": {
+            "description": "Installation model for app-based providers (e.g. 'github_app').",
             "type": "string"
           },
           "logo": {
+            "description": "URL of the provider's logo image.",
             "type": "string"
           },
           "name": {
+            "description": "Human-readable provider name.",
             "type": "string"
           },
           "setup_instructions": {
-            "$ref": "#/components/schemas/SetupInstructions"
+            "$ref": "#/components/schemas/SetupInstructions",
+            "description": "Step-by-step instructions for configuring this provider in your developer console."
           },
           "tags": {
+            "description": "Searchable tags for the provider.",
             "items": {
               "type": "string"
             },
@@ -1190,6 +1294,7 @@
             ]
           },
           "verified": {
+            "description": "Whether this is an officially verified Authpipe provider.",
             "type": "boolean"
           }
         },
@@ -1207,22 +1312,16 @@
         ],
         "type": "object"
       },
-      "RefreshConnectionOutputBody": {
+      "RefreshConnectionResult": {
         "additionalProperties": false,
+        "description": "Result of refreshing an OAuth token for a connection.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/RefreshConnectionOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "expires_at": {
+            "description": "ISO 8601 timestamp of the new token's expiry, if returned by the provider.",
             "type": "string"
           },
           "refreshed": {
+            "description": "Whether the token was successfully refreshed.",
             "type": "boolean"
           }
         },
@@ -1231,78 +1330,12 @@
         ],
         "type": "object"
       },
-      "RefreshOutputBody": {
+      "RotateWebhookSecretResult": {
         "additionalProperties": false,
+        "description": "Result of rotating the webhook signing secret. The new secret is only returned once — store it securely. The previous secret remains valid briefly to allow zero-downtime rotation.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/RefreshOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "failed": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "refreshed": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "refreshed",
-          "failed"
-        ],
-        "type": "object"
-      },
-      "RetentionOutputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/RetentionOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "deleted": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "failed": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "workspaces": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "workspaces",
-          "deleted",
-          "failed"
-        ],
-        "type": "object"
-      },
-      "RotateSecretOutputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/RotateSecretOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "secret": {
+            "description": "The new signing secret. The previous secret remains valid briefly during rotation. Store this securely — it is only returned once.",
             "type": "string"
           }
         },
@@ -1313,20 +1346,14 @@
       },
       "SearchRequest": {
         "additionalProperties": false,
+        "description": "Paginated search request with optional free-text query, field-level filters, sorting, and cursor- or offset-based pagination.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/SearchRequest.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "cursor": {
+            "description": "Opaque cursor for fetching the next page. Returned as next_cursor in the previous response.",
             "type": "string"
           },
           "fields": {
+            "description": "Subset of fields to include in each result object. Omit to return all fields.",
             "items": {
               "type": "string"
             },
@@ -1340,20 +1367,25 @@
               "additionalProperties": {},
               "type": "object"
             },
+            "description": "Field-level filter conditions. Each key is a field name; the value is a map of operator to value (e.g. {\"status\": {\"eq\": \"active\"}}).",
             "type": "object"
           },
           "limit": {
+            "description": "Maximum number of results to return per page.",
             "format": "int64",
             "type": "integer"
           },
           "offset": {
+            "description": "Number of results to skip (offset-based pagination). Cannot be combined with cursor.",
             "format": "int64",
             "type": "integer"
           },
           "query": {
+            "description": "Free-text search query matched against indexed text fields.",
             "type": "string"
           },
           "sort": {
+            "description": "Sort order for the results. Multiple directives are applied in order.",
             "items": {
               "$ref": "#/components/schemas/SortDirectiveInput"
             },
@@ -1367,17 +1399,10 @@
       },
       "SearchResponseConnectionResponse": {
         "additionalProperties": false,
+        "description": "Paginated search response containing a page of results and a cursor for the next page.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/SearchResponseConnectionResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "data": {
+            "description": "List of matching results for this page.",
             "items": {
               "$ref": "#/components/schemas/ConnectionResponse"
             },
@@ -1387,13 +1412,16 @@
             ]
           },
           "has_more": {
+            "description": "Whether there are additional results beyond this page.",
             "type": "boolean"
           },
           "limit": {
+            "description": "The effective page size used for this response.",
             "format": "int64",
             "type": "integer"
           },
           "next_cursor": {
+            "description": "Opaque cursor to pass as cursor in the next request to fetch the following page. Absent when there are no more results.",
             "type": "string"
           }
         },
@@ -1406,17 +1434,10 @@
       },
       "SearchResponseEventResponse": {
         "additionalProperties": false,
+        "description": "Paginated search response containing a page of results and a cursor for the next page.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/SearchResponseEventResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "data": {
+            "description": "List of matching results for this page.",
             "items": {
               "$ref": "#/components/schemas/EventResponse"
             },
@@ -1426,13 +1447,16 @@
             ]
           },
           "has_more": {
+            "description": "Whether there are additional results beyond this page.",
             "type": "boolean"
           },
           "limit": {
+            "description": "The effective page size used for this response.",
             "format": "int64",
             "type": "integer"
           },
           "next_cursor": {
+            "description": "Opaque cursor to pass as cursor in the next request to fetch the following page. Absent when there are no more results.",
             "type": "string"
           }
         },
@@ -1445,17 +1469,10 @@
       },
       "SearchResponseInstallationResponse": {
         "additionalProperties": false,
+        "description": "Paginated search response containing a page of results and a cursor for the next page.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/SearchResponseInstallationResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "data": {
+            "description": "List of matching results for this page.",
             "items": {
               "$ref": "#/components/schemas/InstallationResponse"
             },
@@ -1465,13 +1482,16 @@
             ]
           },
           "has_more": {
+            "description": "Whether there are additional results beyond this page.",
             "type": "boolean"
           },
           "limit": {
+            "description": "The effective page size used for this response.",
             "format": "int64",
             "type": "integer"
           },
           "next_cursor": {
+            "description": "Opaque cursor to pass as cursor in the next request to fetch the following page. Absent when there are no more results.",
             "type": "string"
           }
         },
@@ -1484,17 +1504,10 @@
       },
       "SearchResponseProviderConfigResponse": {
         "additionalProperties": false,
+        "description": "Paginated search response containing a page of results and a cursor for the next page.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/SearchResponseProviderConfigResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "data": {
+            "description": "List of matching results for this page.",
             "items": {
               "$ref": "#/components/schemas/ProviderConfigResponse"
             },
@@ -1504,13 +1517,16 @@
             ]
           },
           "has_more": {
+            "description": "Whether there are additional results beyond this page.",
             "type": "boolean"
           },
           "limit": {
+            "description": "The effective page size used for this response.",
             "format": "int64",
             "type": "integer"
           },
           "next_cursor": {
+            "description": "Opaque cursor to pass as cursor in the next request to fetch the following page. Absent when there are no more results.",
             "type": "string"
           }
         },
@@ -1523,17 +1539,10 @@
       },
       "SearchResponseProviderResponse": {
         "additionalProperties": false,
+        "description": "Paginated search response containing a page of results and a cursor for the next page.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/SearchResponseProviderResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "data": {
+            "description": "List of matching results for this page.",
             "items": {
               "$ref": "#/components/schemas/ProviderResponse"
             },
@@ -1543,13 +1552,16 @@
             ]
           },
           "has_more": {
+            "description": "Whether there are additional results beyond this page.",
             "type": "boolean"
           },
           "limit": {
+            "description": "The effective page size used for this response.",
             "format": "int64",
             "type": "integer"
           },
           "next_cursor": {
+            "description": "Opaque cursor to pass as cursor in the next request to fetch the following page. Absent when there are no more results.",
             "type": "string"
           }
         },
@@ -1560,19 +1572,12 @@
         ],
         "type": "object"
       },
-      "SetWebhookConfigInputBody": {
+      "SetWebhookConfigParams": {
         "additionalProperties": false,
+        "description": "Parameters for configuring the outbound webhook URL. Authpipe will POST event payloads to this URL.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/SetWebhookConfigInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "webhook_url": {
+            "description": "The HTTPS URL Authpipe should POST event payloads to. Must be publicly accessible.",
             "type": "string"
           }
         },
@@ -1581,22 +1586,16 @@
         ],
         "type": "object"
       },
-      "SetWebhookConfigOutputBody": {
+      "SetWebhookConfigResult": {
         "additionalProperties": false,
+        "description": "Result of setting the webhook configuration. The signing secret is only returned once — store it securely.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/SetWebhookConfigOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "secret": {
+            "description": "The generated signing secret. Use this to verify the HMAC-SHA256 signature on incoming webhook payloads. Store it securely — it is only returned once.",
             "type": "string"
           },
           "webhook_url": {
+            "description": "The configured webhook URL.",
             "type": "string"
           }
         },
@@ -1608,14 +1607,18 @@
       },
       "SetupInstructions": {
         "additionalProperties": false,
+        "description": "Step-by-step setup guide for configuring a provider in its developer console.",
         "properties": {
           "callback_note": {
+            "description": "Note about the callback URL to register with the provider.",
             "type": "string"
           },
           "docs_url": {
+            "description": "Link to the provider's official OAuth or API key setup documentation.",
             "type": "string"
           },
           "steps": {
+            "description": "Ordered list of steps to complete the provider setup in the developer console.",
             "items": {
               "type": "string"
             },
@@ -1625,6 +1628,7 @@
             ]
           },
           "title": {
+            "description": "Title of the setup guide (e.g. 'Setting up GitHub OAuth').",
             "type": "string"
           }
         },
@@ -1636,11 +1640,14 @@
       },
       "SortDirectiveInput": {
         "additionalProperties": false,
+        "description": "A sort directive specifying a field name and optional direction.",
         "properties": {
           "direction": {
+            "description": "Sort direction: 'asc' for ascending, 'desc' for descending. Defaults to 'asc'.",
             "type": "string"
           },
           "field": {
+            "description": "Field name to sort by. Must be a sortable field for the resource.",
             "type": "string"
           }
         },
@@ -1649,22 +1656,16 @@
         ],
         "type": "object"
       },
-      "StoreCredentialInputBody": {
+      "StoreCredentialParams": {
         "additionalProperties": false,
+        "description": "Parameters for storing an API key or webhook secret. Creates or replaces the credential for the given provider, tenant, and user.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/StoreCredentialInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "credential": {
+            "description": "The credential value to store (e.g. the API key or webhook secret). Stored encrypted at rest.",
             "type": "string"
           },
           "credential_type": {
+            "description": "Type of credential being stored: 'api_key' or 'webhook_secret'.",
             "enum": [
               "api_key",
               "webhook_secret"
@@ -1672,15 +1673,19 @@
             "type": "string"
           },
           "installation_id": {
+            "description": "Associate the credential with a specific installation.",
             "type": "string"
           },
           "provider": {
+            "description": "Provider slug to store the credential for (e.g. 'github').",
             "type": "string"
           },
           "tenant_id": {
+            "description": "Tenant that will own the connection.",
             "type": "string"
           },
           "user_id": {
+            "description": "End-user within the tenant. Required when the provider config attachment is 'user'.",
             "type": "string"
           }
         },
@@ -1692,22 +1697,16 @@
         ],
         "type": "object"
       },
-      "StoreCredentialOutputBody": {
+      "StoreCredentialResult": {
         "additionalProperties": false,
+        "description": "Result of storing a credential. Indicates whether a new connection was created or an existing one was updated.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/StoreCredentialOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "connection_id": {
+            "description": "ID of the connection created or updated for this credential.",
             "type": "string"
           },
           "status": {
+            "description": "Result status: 'created' for a new connection, 'updated' if an existing connection was replaced.",
             "type": "string"
           }
         },
@@ -1717,41 +1716,106 @@
         ],
         "type": "object"
       },
-      "UpdateCustomProviderInputBody": {
+      "SubscriptionInfo": {
         "additionalProperties": false,
+        "description": "Current subscription status, billing tier, and quota usage for the workspace.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/UpdateCustomProviderInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
+          "audit_log_days": {
+            "description": "Number of days of event audit log history retained on this tier.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "billing_enabled": {
+            "description": "Whether Stripe billing is configured on this deployment. When false, upgrade UI should be hidden.",
+            "type": "boolean"
+          },
+          "connected_accounts_max": {
+            "description": "Maximum active connections allowed on this tier. -1 means unlimited.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "connected_accounts_used": {
+            "description": "Number of active connections currently in use.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "current_period_end": {
+            "description": "ISO 8601 timestamp when the current billing period ends.",
             "type": "string"
           },
-          "auth_api_key": {},
-          "auth_installation": {},
-          "auth_user": {},
-          "health_check": {},
+          "custom_providers_max": {
+            "description": "Maximum custom providers allowed on this tier. -1 means unlimited.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "custom_providers_used": {
+            "description": "Number of custom providers defined in this workspace.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "has_active_subscription": {
+            "description": "Whether the workspace is on an active paid plan. Use this to decide between Checkout (new subscriber) and Portal (manage existing).",
+            "type": "boolean"
+          },
+          "has_stripe_customer": {
+            "description": "Whether this workspace has a Stripe customer record. Informational only — use has_active_subscription to gate UI.",
+            "type": "boolean"
+          },
+          "stripe_subscription_id": {
+            "description": "Stripe subscription ID for the active subscription, if any.",
+            "type": "string"
+          },
+          "tier": {
+            "description": "Current workspace billing tier (e.g. 'free', 'pro', 'scale').",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tier",
+          "connected_accounts_used",
+          "connected_accounts_max",
+          "custom_providers_used",
+          "custom_providers_max",
+          "audit_log_days",
+          "billing_enabled",
+          "has_stripe_customer",
+          "has_active_subscription"
+        ],
+        "type": "object"
+      },
+      "UpdateCustomProviderParams": {
+        "additionalProperties": false,
+        "description": "Fields to update on a custom provider. Each auth config field replaces the existing config entirely when provided.",
+        "properties": {
+          "auth_api_key": {
+            "$ref": "#/components/schemas/APIKeyConfig",
+            "description": "Replacement API key config. Replaces the existing config entirely."
+          },
+          "auth_installation": {
+            "$ref": "#/components/schemas/OAuthConfig",
+            "description": "Replacement OAuth 2.0 config for installation flows. Replaces the existing config entirely."
+          },
+          "auth_user": {
+            "$ref": "#/components/schemas/OAuthConfig",
+            "description": "Replacement OAuth 2.0 config for per-user flows. Replaces the existing config entirely."
+          },
+          "health_check": {
+            "$ref": "#/components/schemas/HealthCheckConfig",
+            "description": "Replacement health check config. Replaces the existing config entirely."
+          },
           "name": {
+            "description": "Updated display name.",
             "type": "string"
           }
         },
         "type": "object"
       },
-      "UpdateProviderConfigInputBody": {
+      "UpdateProviderConfigParams": {
         "additionalProperties": false,
+        "description": "Fields to update on a provider configuration. Only provided fields are changed; omitted fields retain their current values.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/UpdateProviderConfigInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "attachment": {
+            "description": "Updated attachment model. Changing this does not affect existing connections.",
             "enum": [
               "tenant",
               "user"
@@ -1759,6 +1823,7 @@
             "type": "string"
           },
           "bot_scopes": {
+            "description": "Updated bot OAuth scopes. Replaces the existing bot_scopes list.",
             "items": {
               "type": "string"
             },
@@ -1768,18 +1833,23 @@
             ]
           },
           "client_id": {
+            "description": "Updated OAuth client ID.",
             "type": "string"
           },
           "client_secret": {
+            "description": "Updated OAuth client secret. Stored encrypted at rest.",
             "type": "string"
           },
           "enabled": {
+            "description": "Enable or disable this provider config.",
             "type": "boolean"
           },
           "oauth_redirect_url": {
+            "description": "Updated OAuth redirect URI. Must match what is registered with the provider.",
             "type": "string"
           },
           "scopes": {
+            "description": "Updated default OAuth scopes. Replaces the existing scopes list.",
             "items": {
               "type": "string"
             },
@@ -1789,48 +1859,37 @@
             ]
           },
           "signing_key": {
+            "description": "Updated signing key or private key.",
             "type": "string"
           }
         },
         "type": "object"
       },
-      "UpdateWorkspaceInputBody": {
+      "UpdateWorkspaceParams": {
         "additionalProperties": false,
+        "description": "Fields to update on the workspace. Only provided fields are changed.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/UpdateWorkspaceInputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "name": {
+            "description": "Updated workspace display name.",
             "type": "string"
           }
         },
         "type": "object"
       },
-      "ValidateProviderConfigOutputBody": {
+      "ValidateProviderConfigResult": {
         "additionalProperties": false,
+        "description": "Result of validating a provider config's OAuth credentials against the provider's token endpoint.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/ValidateProviderConfigOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "error": {
+            "description": "Error message from the provider's token endpoint if validation failed.",
             "type": "string"
           },
           "token_url": {
+            "description": "The token endpoint URL that was used for validation.",
             "type": "string"
           },
           "valid": {
+            "description": "Whether the client credentials were accepted by the provider's token endpoint.",
             "type": "boolean"
           }
         },
@@ -1842,23 +1901,18 @@
       },
       "WebhookConfigResponse": {
         "additionalProperties": false,
+        "description": "Outbound webhook delivery configuration for the workspace.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/WebhookConfigResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "has_secret_1": {
+            "description": "Whether the primary signing secret is configured.",
             "type": "boolean"
           },
           "has_secret_2": {
+            "description": "Whether the secondary signing secret is configured (used during rotation).",
             "type": "boolean"
           },
           "webhook_url": {
+            "description": "The URL Authpipe sends event webhook payloads to.",
             "type": "string"
           }
         },
@@ -1869,60 +1923,24 @@
         ],
         "type": "object"
       },
-      "WebhookDeliverOutputBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/WebhookDeliverOutputBody.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "delivered": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "failed": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "skipped": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "delivered",
-          "failed",
-          "skipped"
-        ],
-        "type": "object"
-      },
       "WorkspaceResponse": {
         "additionalProperties": false,
+        "description": "An Authpipe workspace — the top-level container for provider configs, connections, and API keys.",
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/WorkspaceResponse.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "created_at": {
+            "description": "ISO 8601 timestamp when the workspace was created.",
             "type": "string"
           },
           "id": {
+            "description": "Unique workspace ID.",
             "type": "string"
           },
           "name": {
+            "description": "Human-readable workspace name.",
             "type": "string"
           },
           "tier": {
+            "description": "Billing tier for the workspace (e.g. 'free', 'starter', 'pro').",
             "type": "string"
           }
         },
@@ -1952,6 +1970,7 @@
   "paths": {
     "/api/api-keys": {
       "get": {
+        "description": "Returns all API keys for the workspace. The raw key value is not included in list responses — it is only returned once at creation time.",
         "operationId": "list-api-keys",
         "responses": {
           "200": {
@@ -1987,12 +2006,13 @@
         ]
       },
       "post": {
+        "description": "Creates a new API key for the workspace. The raw key is returned only once in the response — it cannot be retrieved again. Secret keys should be used for server-side requests; publishable keys are safe to use in client-side code.",
         "operationId": "create-api-key",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateAPIKeyInputBody"
+                "$ref": "#/components/schemas/CreateAPIKeyParams"
               }
             }
           },
@@ -2003,7 +2023,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CreateAPIKeyOutputBody"
+                  "$ref": "#/components/schemas/CreateAPIKeyResult"
                 }
               }
             },
@@ -2028,13 +2048,16 @@
     },
     "/api/api-keys/{id}": {
       "delete": {
+        "description": "Permanently revokes an API key. Any subsequent requests using the revoked key will be rejected with 401. This action cannot be undone.",
         "operationId": "delete-api-key",
         "parameters": [
           {
+            "description": "ID of the API key to revoke.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "ID of the API key to revoke.",
               "type": "string"
             }
           }
@@ -2062,6 +2085,7 @@
     },
     "/api/connections/search": {
       "post": {
+        "description": "Search and filter connections across all tenants and providers. Supports filtering by provider, tenant, user, status, credential type, and attachment. Results are paginated and sorted by connected_at descending by default.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2102,13 +2126,16 @@
     },
     "/api/connections/{id}": {
       "delete": {
+        "description": "Revokes a connection, marking its status as 'revoked'. The stored credential is invalidated and get-credential will no longer return a token for this connection.",
         "operationId": "delete-connection",
         "parameters": [
           {
+            "description": "Unique connection ID to revoke.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique connection ID to revoke.",
               "type": "string"
             }
           }
@@ -2134,13 +2161,16 @@
         ]
       },
       "get": {
+        "description": "Returns a single connection by its ID, including its current status, credential type, and token expiry information.",
         "operationId": "get-connection",
         "parameters": [
           {
+            "description": "Unique connection ID.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique connection ID.",
               "type": "string"
             }
           }
@@ -2171,17 +2201,18 @@
         "tags": [
           "Connections"
         ]
-      }
-    },
-    "/api/connections/{id}/refresh": {
+      },
       "post": {
+        "description": "Forces an immediate token refresh for an OAuth connection, bypassing the normal expiry check. Useful when a token has been revoked externally. If the refresh fails, the connection is marked as 'needs_reauth'.",
         "operationId": "refresh-connection",
         "parameters": [
           {
+            "description": "Unique connection ID to refresh.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique connection ID to refresh.",
               "type": "string"
             }
           }
@@ -2191,7 +2222,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RefreshConnectionOutputBody"
+                  "$ref": "#/components/schemas/RefreshConnectionResult"
                 }
               }
             },
@@ -2216,13 +2247,13 @@
     },
     "/api/credentials": {
       "post": {
-        "description": "Returns a valid credential for the given provider and user.",
+        "description": "Returns a decrypted, ready-to-use credential for the given provider and tenant. Automatically refreshes expired OAuth tokens before returning. If the token cannot be refreshed, needs_reauth is set to true. The credential_for parameter controls whether to prefer a user token, an installation token, or whichever is available.",
         "operationId": "get-credential",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GetCredentialInputBody"
+                "$ref": "#/components/schemas/GetCredentialParams"
               }
             }
           },
@@ -2233,7 +2264,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetCredentialOutputBody"
+                  "$ref": "#/components/schemas/GetCredentialResult"
                 }
               }
             },
@@ -2254,17 +2285,15 @@
         "tags": [
           "Credentials"
         ]
-      }
-    },
-    "/api/credentials/store": {
-      "post": {
-        "description": "Store an API key or webhook secret for a provider connection.",
+      },
+      "put": {
+        "description": "Stores an API key or webhook secret for a provider, creating a connection if one does not exist. Use this for providers that do not support OAuth — the user provides their credential directly and you store it via this endpoint. The credential is encrypted at rest.",
         "operationId": "store-credential",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/StoreCredentialInputBody"
+                "$ref": "#/components/schemas/StoreCredentialParams"
               }
             }
           },
@@ -2275,7 +2304,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StoreCredentialOutputBody"
+                  "$ref": "#/components/schemas/StoreCredentialResult"
                 }
               }
             },
@@ -2300,6 +2329,7 @@
     },
     "/api/custom-providers": {
       "get": {
+        "description": "Returns all custom providers defined in this workspace.",
         "operationId": "list-custom-providers",
         "responses": {
           "200": {
@@ -2335,6 +2365,7 @@
         ]
       },
       "post": {
+        "description": "Defines a new custom provider for integrations not in the built-in catalog. You configure the OAuth endpoints, API key format, and optional health check. Once created, the provider ID can be used when creating provider configs and initiating auth sessions.",
         "operationId": "create-custom-provider",
         "requestBody": {
           "content": {
@@ -2376,13 +2407,16 @@
     },
     "/api/custom-providers/{id}": {
       "delete": {
+        "description": "Permanently deletes a custom provider. Any provider configs referencing this provider must be removed first.",
         "operationId": "delete-custom-provider",
         "parameters": [
           {
+            "description": "Custom provider slug ID to delete.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Custom provider slug ID to delete.",
               "type": "string"
             }
           }
@@ -2408,13 +2442,16 @@
         ]
       },
       "get": {
+        "description": "Returns the full definition of a custom provider, including its OAuth endpoints, API key config, and health check.",
         "operationId": "get-custom-provider",
         "parameters": [
           {
+            "description": "Custom provider slug ID.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Custom provider slug ID.",
               "type": "string"
             }
           }
@@ -2447,13 +2484,16 @@
         ]
       },
       "patch": {
+        "description": "Updates a custom provider's configuration. Each auth config field (auth_user, auth_installation, auth_api_key, health_check) is replaced in full when provided. Omit a field to leave it unchanged.",
         "operationId": "update-custom-provider",
         "parameters": [
           {
+            "description": "Custom provider slug ID to update.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Custom provider slug ID to update.",
               "type": "string"
             }
           }
@@ -2462,7 +2502,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateCustomProviderInputBody"
+                "$ref": "#/components/schemas/UpdateCustomProviderParams"
               }
             }
           },
@@ -2498,6 +2538,7 @@
     },
     "/api/events/search": {
       "post": {
+        "description": "Search the event audit log. Events are emitted for connection and installation lifecycle changes (created, refreshed, revoked, reauth required) and webhook deliveries. Supports filtering by event type, connection, installation, and delivery status.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2538,6 +2579,7 @@
     },
     "/api/installations/search": {
       "post": {
+        "description": "Search and filter app installations across all tenants and providers. Supports filtering by provider, tenant, status, and installation date. Results are paginated and sorted by installed_at descending by default.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2578,13 +2620,16 @@
     },
     "/api/installations/{id}": {
       "delete": {
+        "description": "Deletes an installation record. This removes the installation from Authpipe but does not uninstall the app from the provider. All connections associated with the installation are also deleted.",
         "operationId": "delete-installation",
         "parameters": [
           {
+            "description": "Unique installation ID to delete.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique installation ID to delete.",
               "type": "string"
             }
           }
@@ -2610,13 +2655,16 @@
         ]
       },
       "get": {
+        "description": "Returns a single app installation by its ID, including its current status and provider-assigned installation ID.",
         "operationId": "get-installation",
         "parameters": [
           {
+            "description": "Unique installation ID.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique installation ID.",
               "type": "string"
             }
           }
@@ -2651,13 +2699,16 @@
     },
     "/api/installations/{installation_id}/connections": {
       "get": {
+        "description": "Returns all connections scoped to the specified installation.",
         "operationId": "list-connections-by-installation-flat",
         "parameters": [
           {
+            "description": "Installation ID to list connections for.",
             "in": "path",
             "name": "installation_id",
             "required": true,
             "schema": {
+              "description": "Installation ID to list connections for.",
               "type": "string"
             }
           }
@@ -2698,21 +2749,26 @@
     },
     "/api/installations/{installation_id}/connections/{connection_id}": {
       "get": {
+        "description": "Returns a connection by ID, validated to belong to the specified installation.",
         "operationId": "get-connection-nested-installation-flat",
         "parameters": [
           {
+            "description": "Installation ID.",
             "in": "path",
             "name": "installation_id",
             "required": true,
             "schema": {
+              "description": "Installation ID.",
               "type": "string"
             }
           },
           {
+            "description": "Connection ID.",
             "in": "path",
             "name": "connection_id",
             "required": true,
             "schema": {
+              "description": "Connection ID.",
               "type": "string"
             }
           }
@@ -2745,178 +2801,9 @@
         ]
       }
     },
-    "/api/oauth/device/poll": {
-      "post": {
-        "description": "Exchanges the pending device_code for a token. Returns status=pending while waiting, status=complete when the user has authorized.",
-        "operationId": "device-auth-poll",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DevicePollInputBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DevicePollOutputBody"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Poll for a device authorization result",
-        "tags": [
-          "Connections",
-          "Publishable"
-        ]
-      }
-    },
-    "/api/oauth/device/start": {
-      "post": {
-        "description": "Initiates a device authorization grant against the provider and returns the user_code and verification_uri for the client to display.",
-        "operationId": "device-auth-start",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeviceStartInputBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceStartOutputBody"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Start an RFC 8628 device authorization flow",
-        "tags": [
-          "Connections",
-          "Publishable"
-        ]
-      }
-    },
-    "/api/oauth/installs": {
-      "post": {
-        "operationId": "create-install-session",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInstallSessionInputBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateInstallSessionOutputBody"
-                }
-              }
-            },
-            "description": "Created"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Create install session",
-        "tags": [
-          "Installations",
-          "Publishable"
-        ]
-      }
-    },
-    "/api/oauth/sessions": {
-      "post": {
-        "operationId": "create-auth-session",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAuthSessionInputBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateAuthSessionOutputBody"
-                }
-              }
-            },
-            "description": "Created"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Create OAuth auth session",
-        "tags": [
-          "Connections",
-          "Publishable"
-        ]
-      }
-    },
     "/api/provider-configs": {
       "post": {
+        "description": "Registers your OAuth application credentials (client ID, client secret, redirect URI) for a provider. A provider config is required before you can initiate auth sessions or store credentials for that provider. The client secret is encrypted at rest and never returned in API responses.",
         "operationId": "create-provider-config",
         "requestBody": {
           "content": {
@@ -2958,6 +2845,7 @@
     },
     "/api/provider-configs/search": {
       "post": {
+        "description": "Search and filter provider configs for this workspace. Supports filtering by provider, attachment model, and enabled status.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2998,13 +2886,16 @@
     },
     "/api/provider-configs/{config_id}/connections": {
       "get": {
+        "description": "Returns all connections that belong to the specified provider config.",
         "operationId": "list-connections-by-config-flat",
         "parameters": [
           {
+            "description": "Provider config ID to list connections for.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID to list connections for.",
               "type": "string"
             }
           }
@@ -3045,21 +2936,26 @@
     },
     "/api/provider-configs/{config_id}/connections/{connection_id}": {
       "get": {
+        "description": "Returns a connection by ID, validated to belong to the specified provider config.",
         "operationId": "get-connection-nested-config-flat",
         "parameters": [
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           },
           {
+            "description": "Connection ID.",
             "in": "path",
             "name": "connection_id",
             "required": true,
             "schema": {
+              "description": "Connection ID.",
               "type": "string"
             }
           }
@@ -3094,13 +2990,16 @@
     },
     "/api/provider-configs/{config_id}/installations": {
       "get": {
+        "description": "Returns all app installations that belong to the specified provider config.",
         "operationId": "list-installations-by-config",
         "parameters": [
           {
+            "description": "Provider config ID to list installations for.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID to list installations for.",
               "type": "string"
             }
           }
@@ -3141,21 +3040,26 @@
     },
     "/api/provider-configs/{config_id}/installations/{installation_id}": {
       "get": {
+        "description": "Returns an installation by ID, validated to belong to the specified provider config.",
         "operationId": "get-installation-nested-config",
         "parameters": [
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           },
           {
+            "description": "Installation ID.",
             "in": "path",
             "name": "installation_id",
             "required": true,
             "schema": {
+              "description": "Installation ID.",
               "type": "string"
             }
           }
@@ -3190,21 +3094,26 @@
     },
     "/api/provider-configs/{config_id}/installations/{installation_id}/connections": {
       "get": {
+        "description": "Returns all connections scoped to the specified installation within the given provider config.",
         "operationId": "list-connections-by-installation-config",
         "parameters": [
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           },
           {
+            "description": "Installation ID to list connections for.",
             "in": "path",
             "name": "installation_id",
             "required": true,
             "schema": {
+              "description": "Installation ID to list connections for.",
               "type": "string"
             }
           }
@@ -3245,29 +3154,36 @@
     },
     "/api/provider-configs/{config_id}/installations/{installation_id}/connections/{connection_id}": {
       "get": {
+        "description": "Returns a connection by ID, scoped to the specified installation and provider config.",
         "operationId": "get-connection-nested-installation-config",
         "parameters": [
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           },
           {
+            "description": "Installation ID.",
             "in": "path",
             "name": "installation_id",
             "required": true,
             "schema": {
+              "description": "Installation ID.",
               "type": "string"
             }
           },
           {
+            "description": "Connection ID.",
             "in": "path",
             "name": "connection_id",
             "required": true,
             "schema": {
+              "description": "Connection ID.",
               "type": "string"
             }
           }
@@ -3302,13 +3218,16 @@
     },
     "/api/provider-configs/{id}": {
       "delete": {
+        "description": "Permanently deletes a provider config. All active connections and installations referencing this config must be removed first.",
         "operationId": "delete-provider-config",
         "parameters": [
           {
+            "description": "Unique provider config ID to delete.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique provider config ID to delete.",
               "type": "string"
             }
           }
@@ -3334,13 +3253,16 @@
         ]
       },
       "get": {
+        "description": "Returns a provider config by its ID. The client secret is not included in the response.",
         "operationId": "get-provider-config",
         "parameters": [
           {
+            "description": "Unique provider config ID.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique provider config ID.",
               "type": "string"
             }
           }
@@ -3373,13 +3295,16 @@
         ]
       },
       "patch": {
+        "description": "Updates a provider config. Only the fields you supply are changed. Use this to rotate the client secret, update scopes, or toggle the enabled state.",
         "operationId": "update-provider-config",
         "parameters": [
           {
+            "description": "Unique provider config ID to update.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique provider config ID to update.",
               "type": "string"
             }
           }
@@ -3388,7 +3313,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProviderConfigInputBody"
+                "$ref": "#/components/schemas/UpdateProviderConfigParams"
               }
             }
           },
@@ -3424,14 +3349,16 @@
     },
     "/api/provider-configs/{id}/validate": {
       "post": {
-        "description": "Checks that the client_id and client_secret are accepted by the provider's token endpoint.",
+        "description": "Tests whether the stored client_id and client_secret are accepted by the provider's token endpoint using a client credentials grant. Useful for verifying credentials are correct before going live.",
         "operationId": "validate-provider-config",
         "parameters": [
           {
+            "description": "Unique provider config ID to validate.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Unique provider config ID to validate.",
               "type": "string"
             }
           }
@@ -3441,7 +3368,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidateProviderConfigOutputBody"
+                  "$ref": "#/components/schemas/ValidateProviderConfigResult"
                 }
               }
             },
@@ -3466,6 +3393,7 @@
     },
     "/api/providers/categories": {
       "get": {
+        "description": "Returns all provider categories with counts. Authenticated variant of the public categories endpoint.",
         "operationId": "list-provider-categories-authed",
         "responses": {
           "200": {
@@ -3497,6 +3425,7 @@
     },
     "/api/providers/search": {
       "post": {
+        "description": "Full-text and filtered search across the provider catalog. Supports filtering by category, authentication type, and verified status. Returns the same provider fields as the public list endpoint.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3537,6 +3466,7 @@
     },
     "/api/providers/{id}": {
       "get": {
+        "description": "Returns full details for a single provider, including OAuth endpoints and setup instructions. Authenticated variant — returns the same data as the public endpoint but scoped to the authenticated workspace.",
         "operationId": "get-provider-authed",
         "parameters": [
           {
@@ -3578,13 +3508,16 @@
     },
     "/api/providers/{provider_id}/configs": {
       "get": {
+        "description": "Returns all provider configs in this workspace for the given provider slug.",
         "operationId": "list-provider-configs-by-provider",
         "parameters": [
           {
+            "description": "Provider slug to list configs for.",
             "in": "path",
             "name": "provider_id",
             "required": true,
             "schema": {
+              "description": "Provider slug to list configs for.",
               "type": "string"
             }
           }
@@ -3625,21 +3558,26 @@
     },
     "/api/providers/{provider_id}/configs/{config_id}": {
       "get": {
+        "description": "Returns a provider config by ID, validated to belong to the specified provider. Returns 404 if the config exists but is for a different provider.",
         "operationId": "get-provider-config-nested",
         "parameters": [
           {
+            "description": "Provider slug.",
             "in": "path",
             "name": "provider_id",
             "required": true,
             "schema": {
+              "description": "Provider slug.",
               "type": "string"
             }
           },
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           }
@@ -3674,21 +3612,26 @@
     },
     "/api/providers/{provider_id}/configs/{config_id}/connections": {
       "get": {
+        "description": "Returns all connections that belong to the specified provider config, scoped to the given provider.",
         "operationId": "list-connections-by-config-nested",
         "parameters": [
           {
+            "description": "Provider slug.",
             "in": "path",
             "name": "provider_id",
             "required": true,
             "schema": {
+              "description": "Provider slug.",
               "type": "string"
             }
           },
           {
+            "description": "Provider config ID to list connections for.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID to list connections for.",
               "type": "string"
             }
           }
@@ -3729,29 +3672,36 @@
     },
     "/api/providers/{provider_id}/configs/{config_id}/connections/{connection_id}": {
       "get": {
+        "description": "Returns a connection by ID, scoped to the specified provider config and provider.",
         "operationId": "get-connection-nested-config",
         "parameters": [
           {
+            "description": "Provider slug.",
             "in": "path",
             "name": "provider_id",
             "required": true,
             "schema": {
+              "description": "Provider slug.",
               "type": "string"
             }
           },
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           },
           {
+            "description": "Connection ID.",
             "in": "path",
             "name": "connection_id",
             "required": true,
             "schema": {
+              "description": "Connection ID.",
               "type": "string"
             }
           }
@@ -3786,21 +3736,26 @@
     },
     "/api/providers/{provider_id}/configs/{config_id}/installations": {
       "get": {
+        "description": "Returns all app installations that belong to the specified provider config.",
         "operationId": "list-installations-by-provider-config",
         "parameters": [
           {
+            "description": "Provider slug.",
             "in": "path",
             "name": "provider_id",
             "required": true,
             "schema": {
+              "description": "Provider slug.",
               "type": "string"
             }
           },
           {
+            "description": "Provider config ID to list installations for.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID to list installations for.",
               "type": "string"
             }
           }
@@ -3841,29 +3796,36 @@
     },
     "/api/providers/{provider_id}/configs/{config_id}/installations/{installation_id}": {
       "get": {
+        "description": "Returns an installation by ID, scoped to the specified provider and provider config.",
         "operationId": "get-installation-nested-provider",
         "parameters": [
           {
+            "description": "Provider slug.",
             "in": "path",
             "name": "provider_id",
             "required": true,
             "schema": {
+              "description": "Provider slug.",
               "type": "string"
             }
           },
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           },
           {
+            "description": "Installation ID.",
             "in": "path",
             "name": "installation_id",
             "required": true,
             "schema": {
+              "description": "Installation ID.",
               "type": "string"
             }
           }
@@ -3898,29 +3860,36 @@
     },
     "/api/providers/{provider_id}/configs/{config_id}/installations/{installation_id}/connections": {
       "get": {
+        "description": "Returns all connections scoped to the specified installation, provider config, and provider.",
         "operationId": "list-connections-by-installation-nested",
         "parameters": [
           {
+            "description": "Provider slug.",
             "in": "path",
             "name": "provider_id",
             "required": true,
             "schema": {
+              "description": "Provider slug.",
               "type": "string"
             }
           },
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           },
           {
+            "description": "Installation ID to list connections for.",
             "in": "path",
             "name": "installation_id",
             "required": true,
             "schema": {
+              "description": "Installation ID to list connections for.",
               "type": "string"
             }
           }
@@ -3961,37 +3930,46 @@
     },
     "/api/providers/{provider_id}/configs/{config_id}/installations/{installation_id}/connections/{connection_id}": {
       "get": {
+        "description": "Returns a connection by ID, scoped to the specified installation, provider config, and provider.",
         "operationId": "get-connection-nested-installation",
         "parameters": [
           {
+            "description": "Provider slug.",
             "in": "path",
             "name": "provider_id",
             "required": true,
             "schema": {
+              "description": "Provider slug.",
               "type": "string"
             }
           },
           {
+            "description": "Provider config ID.",
             "in": "path",
             "name": "config_id",
             "required": true,
             "schema": {
+              "description": "Provider config ID.",
               "type": "string"
             }
           },
           {
+            "description": "Installation ID.",
             "in": "path",
             "name": "installation_id",
             "required": true,
             "schema": {
+              "description": "Installation ID.",
               "type": "string"
             }
           },
           {
+            "description": "Connection ID.",
             "in": "path",
             "name": "connection_id",
             "required": true,
             "schema": {
+              "description": "Connection ID.",
               "type": "string"
             }
           }
@@ -4024,136 +4002,9 @@
         ]
       }
     },
-    "/api/scheduler/healthcheck": {
-      "post": {
-        "description": "Checks token validity for active connections by calling provider health check endpoints. Called by SwitchPost on a schedule.",
-        "operationId": "scheduler-healthcheck",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthCheckOutputBody"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Trigger connection health checks",
-        "tags": [
-          "Scheduler"
-        ]
-      }
-    },
-    "/api/scheduler/refresh": {
-      "post": {
-        "description": "Scans for connections with tokens nearing expiry and refreshes them. Called by SwitchPost on a schedule.",
-        "operationId": "scheduler-refresh",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RefreshOutputBody"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Trigger token refresh scan",
-        "tags": [
-          "Scheduler"
-        ]
-      }
-    },
-    "/api/scheduler/retention": {
-      "post": {
-        "description": "Deletes events older than the per-tier retention window for each workspace. Called by SwitchPost on a daily schedule.",
-        "operationId": "scheduler-retention",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RetentionOutputBody"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Trigger audit log retention sweep",
-        "tags": [
-          "Scheduler"
-        ]
-      }
-    },
-    "/api/scheduler/webhook-deliver": {
-      "post": {
-        "description": "Delivers pending events to workspace webhook endpoints with HMAC-SHA256 signatures.",
-        "operationId": "scheduler-webhook-deliver",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WebhookDeliverOutputBody"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Trigger webhook delivery",
-        "tags": [
-          "Scheduler"
-        ]
-      }
-    },
     "/api/webhook-config": {
       "delete": {
+        "description": "Removes the webhook URL and signing secrets from the workspace. Authpipe will stop delivering event payloads. This does not delete any events — they remain queryable via the events search endpoint.",
         "operationId": "delete-webhook-config",
         "responses": {
           "204": {
@@ -4176,6 +4027,7 @@
         ]
       },
       "get": {
+        "description": "Returns the current webhook configuration for the workspace, including the destination URL and whether signing secrets are configured. The secret values themselves are never returned.",
         "operationId": "get-webhook-config",
         "responses": {
           "200": {
@@ -4205,12 +4057,13 @@
         ]
       },
       "post": {
+        "description": "Configures the webhook URL and generates a new HMAC-SHA256 signing secret. The secret is returned only once in this response — store it securely and use it to verify the X-Authpipe-Signature header on incoming webhook deliveries.",
         "operationId": "set-webhook-config",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SetWebhookConfigInputBody"
+                "$ref": "#/components/schemas/SetWebhookConfigParams"
               }
             }
           },
@@ -4221,7 +4074,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SetWebhookConfigOutputBody"
+                  "$ref": "#/components/schemas/SetWebhookConfigResult"
                 }
               }
             },
@@ -4246,13 +4099,14 @@
     },
     "/api/webhook-config/rotate": {
       "post": {
+        "description": "Generates a new webhook signing secret. During a brief overlap window, both the old and new secret are accepted so you can update your application without dropping webhook deliveries. The new secret is returned only once — store it securely.",
         "operationId": "rotate-webhook-secret",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RotateSecretOutputBody"
+                  "$ref": "#/components/schemas/RotateWebhookSecretResult"
                 }
               }
             },
@@ -4277,13 +4131,16 @@
     },
     "/api/workspaces/{id}": {
       "get": {
+        "description": "Returns workspace details including its name and billing tier.",
         "operationId": "get-workspace",
         "parameters": [
           {
+            "description": "Workspace ID.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Workspace ID.",
               "type": "string"
             }
           }
@@ -4316,13 +4173,16 @@
         ]
       },
       "patch": {
+        "description": "Updates workspace properties. Currently supports renaming the workspace.",
         "operationId": "update-workspace",
         "parameters": [
           {
+            "description": "Workspace ID to update.",
             "in": "path",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "Workspace ID to update.",
               "type": "string"
             }
           }
@@ -4331,7 +4191,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateWorkspaceInputBody"
+                "$ref": "#/components/schemas/UpdateWorkspaceParams"
               }
             }
           },
@@ -4367,32 +4227,38 @@
     },
     "/oauth/callback": {
       "get": {
-        "description": "Handles the OAuth redirect callback from providers.",
+        "description": "Handles the OAuth redirect callback from providers. Authpipe decrypts the state parameter, exchanges the authorization code for tokens, stores them encrypted, and then redirects to the application's redirect URL. This endpoint is called by the provider — you do not call it directly.",
         "operationId": "oauth-callback",
         "parameters": [
           {
+            "description": "Encrypted state parameter from the authorization request. Contains the session data and PKCE verifier.",
             "explode": false,
             "in": "query",
             "name": "state",
             "required": true,
             "schema": {
+              "description": "Encrypted state parameter from the authorization request. Contains the session data and PKCE verifier.",
               "type": "string"
             }
           },
           {
+            "description": "Authorization code returned by the provider after user consent.",
             "explode": false,
             "in": "query",
             "name": "code",
             "required": true,
             "schema": {
+              "description": "Authorization code returned by the provider after user consent.",
               "type": "string"
             }
           },
           {
+            "description": "Error code returned by the provider if the user denied access or an error occurred.",
             "explode": false,
             "in": "query",
             "name": "error",
             "schema": {
+              "description": "Error code returned by the provider if the user denied access or an error occurred.",
               "type": "string"
             }
           }
@@ -4425,8 +4291,181 @@
         ]
       }
     },
+    "/oauth/device/poll": {
+      "post": {
+        "description": "Exchanges the pending device_code for a token. Returns status=pending while waiting, status=complete when the user has authorized.",
+        "operationId": "device-auth-poll",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DevicePollParams"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DevicePollResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Poll for a device authorization result",
+        "tags": [
+          "Connections",
+          "Publishable"
+        ]
+      }
+    },
+    "/oauth/device/start": {
+      "post": {
+        "description": "Initiates a device authorization grant against the provider and returns the user_code and verification_uri for the client to display.",
+        "operationId": "device-auth-start",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceStartParams"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceStartResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Start an RFC 8628 device authorization flow",
+        "tags": [
+          "Connections",
+          "Publishable"
+        ]
+      }
+    },
+    "/oauth/installs": {
+      "post": {
+        "description": "Initiates an app installation flow. Returns the authorization URL to redirect the user to for installing the app into their organization or workspace. After installation completes, the provider redirects to Authpipe's callback, which creates an Installation and redirects to your redirect_url. Can be called with a publishable key.",
+        "operationId": "create-install-session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInstallSessionParams"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallSessionResult"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create install session",
+        "tags": [
+          "Installations",
+          "Publishable"
+        ]
+      }
+    },
+    "/oauth/sessions": {
+      "post": {
+        "description": "Initiates an OAuth authorization flow for a user. Returns the authorization URL to redirect the user to, along with a session ID. After the user authorizes, the provider redirects to Authpipe's callback URL which exchanges the code, stores the token, then redirects to your redirect_url. Can be called with a publishable key.",
+        "operationId": "create-auth-session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAuthSessionParams"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResult"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create OAuth auth session",
+        "tags": [
+          "Connections",
+          "Publishable"
+        ]
+      }
+    },
     "/providers": {
       "get": {
+        "description": "Returns a paginated list of providers from the public catalog. Use the category and search parameters to filter results. No authentication required.",
         "operationId": "list-providers",
         "parameters": [
           {
@@ -4507,6 +4546,7 @@
     },
     "/providers/categories": {
       "get": {
+        "description": "Returns all provider categories with the number of providers in each. Useful for building a category filter UI. No authentication required.",
         "operationId": "list-provider-categories",
         "responses": {
           "200": {
@@ -4538,6 +4578,7 @@
     },
     "/providers/{id}": {
       "get": {
+        "description": "Returns full details for a single provider from the public catalog, including its supported auth methods and setup instructions. No authentication required.",
         "operationId": "get-provider",
         "parameters": [
           {
@@ -4583,10 +4624,12 @@
         "operationId": "receive-webhook",
         "parameters": [
           {
+            "description": "Provider slug that sent the webhook (e.g. 'github', 'slack').",
             "in": "path",
             "name": "provider",
             "required": true,
             "schema": {
+              "description": "Provider slug that sent the webhook (e.g. 'github', 'slack').",
               "type": "string"
             }
           }
